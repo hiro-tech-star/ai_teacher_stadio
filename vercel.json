@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/chat",
+      "destination": "/api/chat.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/AI_Teacher_Phase_V.html"
+    }
+  ]
+}

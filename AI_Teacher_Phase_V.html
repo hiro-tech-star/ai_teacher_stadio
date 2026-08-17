@@ -1,0 +1,5154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Teacher Studio - 推し先生と学ぶ5分間</title>
+  <style>
+/* Modern Reset & Base Theme Variables */
+:root {
+  --bg-main: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-surface-elevated: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-blue: #38bdf8;
+  --accent-indigo: #6366f1;
+  --accent-red: #ef4444;
+  --accent-green: #10b981;
+  --accent-purple: #8b5cf6;
+  --accent-amber: #f59e0b;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Header */
+header {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-badge {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.5px;
+}
+
+.logo-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-pill {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-pill:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--accent-blue);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(56, 189, 248, 0.5);
+}
+
+.btn-secondary {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Main Container & Screens */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.screen {
+  display: none;
+  flex: 1;
+  width: 100%;
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Step Wizard Progress Bar */
+.wizard-progress {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.wizard-step-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.wizard-step-badge.active {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+}
+
+/* Container for Steps */
+.step-container {
+  max-width: 980px;
+  margin: 24px auto 40px auto;
+  padding: 0 24px;
+  width: 100%;
+}
+
+.step-hero {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.step-hero h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.step-hero p {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* ======================================================== */
+/* Official Real Teacher Portrait Styling                   */
+/* ======================================================== */
+.teacher-portrait-frame {
+  display: inline-block;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  background: #0f172a;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teacher-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.portrait-card {
+  width: 100%;
+  height: 230px;
+  border-radius: 12px;
+}
+
+.portrait-large {
+  width: 260px;
+  height: 350px;
+  border-radius: 20px;
+  border: 2px solid var(--border-color);
+}
+
+.portrait-zoom {
+  width: 320px;
+  height: 420px;
+  border-radius: 24px;
+  border: 3px solid var(--accent-blue);
+  box-shadow: 0 0 32px rgba(56, 189, 248, 0.4);
+}
+
+.portrait-lesson {
+  width: 150px;
+  height: 200px;
+  border-radius: 14px;
+  border: 2px solid var(--accent-blue);
+}
+
+.portrait-medium {
+  width: 160px;
+  height: 215px;
+  border-radius: 14px;
+}
+
+/* Customizer Bar */
+.customizer-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.custom-option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-option-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.form-input {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--accent-blue);
+}
+
+/* STEP 2: Personality Sliders & Live Preview */
+.personality-split-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 840px) {
+  .personality-split-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.personality-preview-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.live-speech-bubble {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a7f3d0;
+  margin-top: 16px;
+  width: 100%;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-height: 60px;
+}
+
+.sliders-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.custom-range-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--bg-surface-elevated);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.custom-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+  transition: transform 0.1s ease;
+}
+
+.custom-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* STEP 3: Speech Style Cards */
+.situation-quote-box {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-amber);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.speech-style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.speech-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.speech-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.speech-card.selected {
+  border-color: var(--accent-blue);
+  background: rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+}
+
+.speech-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  margin-bottom: 8px;
+}
+
+.speech-card-quote {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.btn-audio-preview {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+}
+
+.btn-audio-preview:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--accent-blue);
+}
+
+/* Cinematic Blackout Transition */
+.cinematic-blackout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000000;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.cinematic-blackout.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* First Encounter & Returning Home Screens */
+.encounter-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  text-align: center;
+  width: 100%;
+}
+
+.encounter-frame {
+  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1));
+  border: 2px solid var(--border-color);
+  border-radius: 28px;
+  padding: 36px 32px;
+  width: 100%;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  margin-bottom: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.video-live-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: var(--accent-red);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-red);
+  border-radius: 50%;
+}
+
+.encounter-name-badge {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent-blue);
+  margin: 14px 0 8px 0;
+}
+
+.speech-bubble {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 18px 24px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  max-width: 620px;
+  margin: 0 auto 16px auto;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.intent-choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.intent-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 14px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.intent-btn:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+/* Blackboard Tutoring Workspace */
+.lesson-split-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 20px;
+  padding: 20px 24px;
+  max-width: 1360px;
+  margin: 0 auto;
+  width: 100%;
+  height: calc(100vh - 64px);
+}
+
+@media (max-width: 900px) {
+  .lesson-split-container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+.teacher-pane {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.teacher-video-box {
+  background: var(--bg-main);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.teacher-pane-speech {
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.timer-card {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent-blue);
+}
+
+.timer-progress-bar {
+  height: 6px;
+  background: var(--bg-surface-elevated);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.timer-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #38bdf8, #10b981);
+  transition: width 1s linear;
+}
+
+.blackboard-pane {
+  background: #14211b;
+  border: 4px solid #4a3525;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+  color: #f1f5f9;
+}
+
+.blackboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.blackboard-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #a7f3d0;
+}
+
+.chalk-formula {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  margin: 6px 0 14px 0;
+  color: #ffffff;
+}
+
+.blackboard-step-hint-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: #fef08a;
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: var(--font-mono);
+  margin-bottom: 12px;
+}
+
+.lesson-dialogue-stream {
+  flex: 1;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.stream-msg {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 90%;
+  animation: fadeIn 0.2s ease;
+}
+
+.teacher-msg {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #a7f3d0;
+  align-self: flex-start;
+}
+
+.student-msg {
+  background: rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #e0f2fe;
+  align-self: flex-end;
+}
+
+.lesson-chat-input-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chalk-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #a7f3d0;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 14px;
+  outline: none;
+}
+
+.suggestion-chips-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.suggestion-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f1f5f9;
+  padding: 5px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.suggestion-chip:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+/* Modals & Validation Console */
+.val-modal-full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(12px);
+  z-index: 200;
+  display: none;
+  overflow-y: auto;
+}
+
+.val-modal-full.active {
+  display: block;
+}
+
+.val-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  text-align: center;
+}
+
+.val-num {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
+}
+
+.val-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.val-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.funnel-step-row {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  border-left: 3px solid var(--accent-blue);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+}
+
+</style>
+  <style>
+    .day-selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      padding: 3px 8px;
+      border-radius: 9999px;
+    }
+    .day-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .day-tab-btn.active-day {
+      background: var(--accent-blue);
+      color: white;
+    }
+    .visual-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .visual-card-panel {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .visual-card-panel:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.6);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .visual-card-panel.selected {
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.1);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+    .teacher-name-title {
+      font-size: 19px;
+      font-weight: 800;
+      margin: 8px 0 2px 0;
+    }
+    .teacher-subtitle {
+      font-size: 12px;
+      color: var(--text-primary);
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+    .badge-pill-row {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .tag-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+    .teacher-desc-text {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      text-align: left;
+      background: rgba(0,0,0,0.25);
+      padding: 8px 10px;
+      border-radius: 6px;
+      width: 100%;
+    }
+    .unit-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .unit-btn {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .unit-btn:hover {
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .unit-btn.selected {
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.18);
+      color: var(--accent-blue);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+    .unit-btn-cat {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cinematic Blackout Overlay -->
+  <div class="cinematic-blackout" id="cinematic-blackout"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo-area">
+      <div class="logo-badge">推しAI先生</div>
+      <div class="logo-title">AI Teacher Studio</div>
+      
+      <!-- Day Switcher Tabs for QA/Simulation -->
+      <div class="day-selector-bar">
+        <span style="font-size: 11px; color: var(--text-muted); margin-right: 4px;">日次:</span>
+        <button class="day-tab-btn active-day" data-day="DAY 1">DAY 1</button>
+        <button class="day-tab-btn" data-day="DAY 2">DAY 2</button>
+        <button class="day-tab-btn" data-day="DAY 7">DAY 7</button>
+        <button class="day-tab-btn" data-day="DAY 30">DAY 30</button>
+        <button class="day-tab-btn" data-day="DAY 40">DAY 40 (模試)</button>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-pill" id="btn-open-val-dashboard" style="background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8;">
+        🔬 実証実験ダッシュボード
+      </button>
+      <button class="btn-pill" id="btn-toggle-analytics">
+        📊 簡易ログ
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Screen Container -->
+  <main>
+
+    <!-- ========================================================= -->
+    <!-- STEP 1: VISUAL SELECTION (4 Official Characters: Sota, Yui, Ryo, Ayaka) -->
+    <!-- ========================================================= -->
+    <section id="screen-step1-visual" class="screen active">
+      <div class="step-container" style="max-width: 1040px;">
+        <div class="wizard-progress">
+          <span class="wizard-step-badge active">STEP 1 見た目</span>
+          <span class="wizard-step-badge">STEP 2 性格</span>
+          <span class="wizard-step-badge">STEP 3 話し方</span>
+        </div>
+
+        <div class="step-hero">
+          <h1>どの先生が気になる？</h1>
+          <p>いっしょに頑張れる「推し先生」を選ぼう！（4名から選択）</p>
+        </div>
+
+        <!-- 4 Official Character Cards Grid with Direct <img> -->
+        <div class="visual-grid-4">
+          <!-- 1. Sota -->
+          <div class="visual-card-panel visual-card selected" data-base-id="sota">
+            <div class="teacher-portrait-frame portrait-card">
+              <img src="assets/teachers/sota.png?v=20260816_4teachers" alt="ソウタ" class="teacher-portrait-img">
+            </div>
+            <h3 class="teacher-name-title" style="color: #3b82f6;">ソウタ</h3>
+            <div class="teacher-subtitle">友達のように話せる<br>頼れるお兄さんタイプ</div>
+            <div class="badge-pill-row">
+              <span class="tag-badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">フレンドリー</span>
+              <span class="tag-badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">親しみやすい</span>
+            </div>
+            <div class="teacher-desc-text">気さくで話しやすて、なんでも聞きやすい。つまずいても「大丈夫、一緒にいこ！」とそばで支えてくれる存在。</div>
+          </div>
+
+          <!-- 2. Yui -->
+          <div class="visual-card-panel visual-card" data-base-id="yui">
+            <div class="teacher-portrait-frame portrait-card">
+              <img src="assets/teachers/yui.png?v=20260816_4teachers" alt="ユイ" class="teacher-portrait-img">
+            </div>
+            <h3 class="teacher-name-title" style="color: #f43f5e;">ユイ</h3>
+            <div class="teacher-subtitle">やさしくて丁寧に教えてくれる<br>安心感のある先生タイプ</div>
+            <div class="badge-pill-row">
+              <span class="tag-badge" style="background: rgba(244, 63, 94, 0.2); color: #f43f5e;">やさしい</span>
+              <span class="tag-badge" style="background: rgba(244, 63, 94, 0.2); color: #f43f5e;">丁寧</span>
+            </div>
+            <div class="teacher-desc-text">一人ひとりのペースに合わせてくれるやさしい先生。わかるまで何度でも、根気強くサポートしてくれるよ。</div>
+          </div>
+
+          <!-- 3. Ryo -->
+          <div class="visual-card-panel visual-card" data-base-id="ryo">
+            <div class="teacher-portrait-frame portrait-card">
+              <img src="assets/teachers/ryo.png?v=20260816_4teachers" alt="リョウ" class="teacher-portrait-img">
+            </div>
+            <h3 class="teacher-name-title" style="color: #8b5cf6;">リョウ</h3>
+            <div class="teacher-subtitle">クールで論理的に導く<br>頭脳派タイプ</div>
+            <div class="badge-pill-row">
+              <span class="tag-badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;">論理的</span>
+              <span class="tag-badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;">クール</span>
+            </div>
+            <div class="teacher-desc-text">ムダがなくて、ポイントをズバッと解説。考え方を論理的に整理してくれて、「なるほど！」が増えていく。</div>
+          </div>
+
+          <!-- 4. Ayaka -->
+          <div class="visual-card-panel visual-card" data-base-id="ayaka">
+            <div class="teacher-portrait-frame portrait-card">
+              <img src="assets/teachers/ayaka.png?v=20260816_4teachers" alt="アヤカ" class="teacher-portrait-img">
+            </div>
+            <h3 class="teacher-name-title" style="color: #10b981;">アヤカ</h3>
+            <div class="teacher-subtitle">元気で明るく励ましてくれる<br>応援団長タイプ</div>
+            <div class="badge-pill-row">
+              <span class="tag-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">元気</span>
+              <span class="tag-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">ポジティブ</span>
+            </div>
+            <div class="teacher-desc-text">いつも明るくて、前向きな言葉で背中を押してくれる先生。「できるよ！」って信じてくれるよ。</div>
+          </div>
+        </div>
+
+        <!-- Nickname Form -->
+        <div class="customizer-panel" style="max-width: 460px; margin: 0 auto 24px auto;">
+          <div class="custom-option-group">
+            <label>👤 呼ばれたい名前（ニックネーム）</label>
+            <input type="text" id="step1-nickname-input" class="form-input" value="ゆう" placeholder="例: ゆう">
+          </div>
+        </div>
+
+        <div style="text-align: center;">
+          <button class="btn-primary" id="btn-step1-next" style="padding: 14px 40px; font-size: 17px;">
+            次へ：性格をつくる ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- STEP 2: PERSONALITY SLIDERS & REAL-TIME PREVIEW           -->
+    <!-- ========================================================= -->
+    <section id="screen-step2-personality" class="screen">
+      <div class="step-container">
+        <div class="wizard-progress">
+          <span class="wizard-step-badge">STEP 1 見た目</span>
+          <span class="wizard-step-badge active">STEP 2 性格</span>
+          <span class="wizard-step-badge">STEP 3 話し方</span>
+        </div>
+
+        <div class="step-hero">
+          <h1>どんな先生にする？</h1>
+          <p>スライダーを動かすと、先生の喋り方がリアルタイムに変化するよ。</p>
+        </div>
+
+        <div class="personality-split-layout">
+          <!-- Left: Live Real Teacher Image & Sample Speech -->
+          <div class="personality-preview-card">
+            <div class="teacher-portrait-frame portrait-large">
+              <img id="step2-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+            </div>
+            <div class="live-speech-bubble" id="step2-sample-speech">
+              「わかるわ〜だるいよな。まあ5分だけサクッとやって即終わろーぜ。」
+            </div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 8px;">
+              💬 スライダーに合わせて発話例が変化します
+            </div>
+          </div>
+
+          <!-- Right: 5 Interactive Sliders -->
+          <div class="sliders-card">
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>やさしい 🍵</span>
+                <span>厳しい 🔥</span>
+              </div>
+              <input type="range" id="slider-gentle-strict" class="custom-range-slider" min="1" max="5" value="2">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>静か 🌙</span>
+                <span>元気 ☀️</span>
+              </div>
+              <input type="range" id="slider-quiet-energetic" class="custom-range-slider" min="1" max="5" value="4">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>先生っぽい 📚</span>
+                <span>友達っぽい 🤝</span>
+              </div>
+              <input type="range" id="slider-teacher-friend" class="custom-range-slider" min="1" max="5" value="4">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>褒めない 🧐</span>
+                <span>めちゃ褒める ✨</span>
+              </div>
+              <input type="range" id="slider-praise" class="custom-range-slider" min="1" max="5" value="5">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>真面目 👔</span>
+                <span>ふざける・ノリ重視 😆</span>
+              </div>
+              <input type="range" id="slider-serious-playful" class="custom-range-slider" min="1" max="5" value="4">
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; max-width: 600px; margin: 0 auto;">
+          <button class="btn-secondary" id="btn-step2-back">⬅ 戻る</button>
+          <button class="btn-primary" id="btn-step2-next">次へ：話し方を選ぶ ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- STEP 3: SPEECH STYLE SELECTION & VOICE PREVIEW           -->
+    <!-- ========================================================= -->
+    <section id="screen-step3-speech" class="screen">
+      <div class="step-container">
+        <div class="wizard-progress">
+          <span class="wizard-step-badge">STEP 1 見た目</span>
+          <span class="wizard-step-badge">STEP 2 性格</span>
+          <span class="wizard-step-badge active">STEP 3 話し方</span>
+        </div>
+
+        <div class="step-hero">
+          <h1>どの話し方が好き？</h1>
+          <p>同じ状況でも、先生によって声かけが変わるよ。好みの距離感を選んでね。</p>
+        </div>
+
+        <!-- Selected Teacher Image Preview in Step 3 -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div class="teacher-portrait-frame portrait-medium">
+            <img id="step3-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+          </div>
+        </div>
+
+        <div class="situation-quote-box">
+          💭 生徒：「今日、勉強したくない」
+        </div>
+
+        <!-- 4 Speech Style Cards -->
+        <div class="speech-style-grid">
+          <!-- Style A -->
+          <div class="speech-card" data-style-id="style_a">
+            <div>
+              <div class="speech-card-title">話し方 A｜寄り添い・優しさ</div>
+              <div class="speech-card-quote">「そっか。じゃあ今日は5分だけ一緒にやろう。」</div>
+            </div>
+            <button class="btn-audio-preview" data-style-id="style_a" data-quote="そっか。じゃあ今日は5分だけ一緒にやろう。">
+              🔊 試しに聞く
+            </button>
+          </div>
+
+          <!-- Style B -->
+          <div class="speech-card selected" data-style-id="style_b">
+            <div>
+              <div class="speech-card-title">話し方 B｜共感・フラット友達</div>
+              <div class="speech-card-quote">「わかる。今日はやる気出ないよな。……まあ1問だけやる？」</div>
+            </div>
+            <button class="btn-audio-preview" data-style-id="style_b" data-quote="わかる。今日はやる気出ないよな。……まあ1問だけやる？">
+              🔊 試しに聞く
+            </button>
+          </div>
+
+          <!-- Style C -->
+          <div class="speech-card" data-style-id="style_c">
+            <div>
+              <div class="speech-card-title">話し方 C｜ツッコミ・信頼感</div>
+              <div class="speech-card-quote">「またそれ言ってる。でも前もそう言いながら結局やったよね。」</div>
+            </div>
+            <button class="btn-audio-preview" data-style-id="style_c" data-quote="またそれ言ってる。でも前もそう言いながら結局やったよね。">
+              🔊 試しに聞く
+            </button>
+          </div>
+
+          <!-- Style D -->
+          <div class="speech-card" data-style-id="style_d">
+            <div>
+              <div class="speech-card-title">話し方 D｜クール・挑戦的</div>
+              <div class="speech-card-quote">「……で、本当に今日はやらない？」</div>
+            </div>
+            <button class="btn-audio-preview" data-style-id="style_d" data-quote="……で、本当に今日はやらない？">
+              🔊 試しに聞く
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; max-width: 600px; margin: 0 auto;">
+          <button class="btn-secondary" id="btn-step3-back">⬅ 戻る</button>
+          <button class="btn-primary" id="btn-step3-finish" style="padding: 14px 36px; font-size: 17px;">
+            この推し先生を誕生させる！ ✨
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- DRAMATIC FIRST ENCOUNTER (暗転 ➔ 初対面 40〜50%大画面)     -->
+    <!-- ========================================================= -->
+    <section id="screen-first-encounter" class="screen">
+      <div class="encounter-container">
+        <div class="encounter-frame">
+          <div class="video-live-badge">
+            <span class="live-dot"></span> 1:1 MEETING
+          </div>
+          <!-- 40-50% Big Portrait Display -->
+          <div class="teacher-portrait-frame portrait-zoom" style="margin-top: 10px;">
+            <img id="encounter-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+          </div>
+          <div class="encounter-name-badge" id="encounter-teacher-name">ソウタ 先生</div>
+          <div class="speech-bubble" id="encounter-speech-text" style="font-size: 17px; margin-top: 10px;">
+            ……はじめまして。
+          </div>
+        </div>
+
+        <div style="margin-bottom: 12px; font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+          👇 先生に返事をしてみよう
+        </div>
+
+        <div class="intent-choice-grid">
+          <button class="intent-btn encounter-intent-btn" data-intent="study">
+            📚 勉強しにきた（5分やる！）
+          </button>
+          <button class="intent-btn encounter-intent-btn" data-intent="chat">
+            ☕ ちょっと話したい・息抜き
+          </button>
+          <button class="intent-btn encounter-intent-btn" data-intent="casual">
+            ☁️ なんとなく来た
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- RETURNING HOME (次回アクセス時の継続画面)                  -->
+    <!-- ========================================================= -->
+    <section id="screen-returning-home" class="screen">
+      <div class="encounter-container">
+        <div class="encounter-frame">
+          <div class="video-live-badge">
+            <span class="live-dot"></span> LIVE ROOM
+          </div>
+          <div class="teacher-portrait-frame portrait-large">
+            <img id="returning-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+          </div>
+          <div class="encounter-name-badge" id="returning-teacher-title">推し先生の部屋</div>
+          <div class="speech-bubble" id="returning-speech-bubble">
+            お、来たな！今日も5分だけサクッとやってく？
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 400px; margin: 0 auto;">
+          <button class="btn-primary" id="btn-returning-start" style="padding: 14px 28px; font-size: 17px;">
+            今日の5分学習を始める 🚀
+          </button>
+          <button class="btn-secondary" id="btn-recreate-teacher" style="font-size: 13px; color: var(--text-secondary);">
+            ⚙️ 先生をつくり直す / カスタマイズ
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 5-MINUTE OFFER & MULTI-UNIT SELECTION                     -->
+    <!-- ========================================================= -->
+    <section id="screen-offer" class="screen">
+      <div class="offer-container">
+        <div class="zoom-video-frame" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+          <div class="teacher-portrait-frame portrait-medium" style="margin-bottom: 12px;">
+            <img id="offer-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+          </div>
+          <div class="speech-bubble" id="offer-speech-text">
+            5分だけ付き合ってよ！どの単元やる？
+          </div>
+          <div style="display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; background: rgba(245, 158, 11, 0.2); color: #f59e0b;" id="offer-trigger-badge">
+            AIからの転換提案 (teacher_prompted)
+          </div>
+        </div>
+
+        <div class="unit-selector-card">
+          <div style="font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">
+            📖 5分で取り組む単元を選択（タップで変更可能）
+          </div>
+          <div class="unit-selection-grid">
+            <button class="unit-btn" data-unit-id="linear_equations_1" data-unit-name="一次方程式（カッコと分配法則）">
+              <span>一次方程式（カッコと分配）</span>
+              <span class="unit-btn-cat">例: 3(x - 2) = 12</span>
+            </button>
+            <button class="unit-btn" data-unit-id="algebraic_expressions" data-unit-name="文字式の計算（同類項の整理）">
+              <span>文字式の計算（同類項）</span>
+              <span class="unit-btn-cat">例: 4a + 3b - 2a + 5b</span>
+            </button>
+            <button class="unit-btn selected" data-unit-id="proportions" data-unit-name="比例・反比例の式と計算">
+              <span>比例・反比例の式</span>
+              <span class="unit-btn-cat">例: 反比例 y = a/x の決定と計算</span>
+            </button>
+            <button class="unit-btn" data-unit-id="positive_negative" data-unit-name="正負の数の四則混合計算">
+              <span>正負の数の計算</span>
+              <span class="unit-btn-cat">例: (-8) - (-5) × 2</span>
+            </button>
+            <button class="unit-btn" data-unit-id="linear_eq_applications" data-unit-name="一次方程式の利用（代金・個数文章題）">
+              <span>一次方程式の文章題</span>
+              <span class="unit-btn-cat">例: 代金・個数の問題</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <button class="btn-primary" id="btn-accept-offer" style="padding: 14px 36px; font-size: 18px;">
+            この単元で5分スタート！ 🚀
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- LESSON MODE (1-on-1 Interactive Tutoring & Blackboard)    -->
+    <!-- ========================================================= -->
+    <section id="screen-lesson" class="screen">
+      <div class="lesson-split-container">
+        
+        <!-- Left Column: Same Teacher Real Image & Timer -->
+        <div class="teacher-pane">
+          <div class="teacher-video-box">
+            <div class="video-live-badge" style="top: 8px; left: 8px;">
+              <span class="live-dot"></span> 1:1 TUTORING
+            </div>
+            <div class="teacher-portrait-frame portrait-lesson">
+              <img id="lesson-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+            </div>
+            <div style="font-weight: 700; font-size: 15px; margin-top: 8px; color: var(--accent-blue);" id="lesson-teacher-name">ソウタ 先生</div>
+          </div>
+
+          <div class="teacher-pane-speech" id="lesson-speech-text">
+            焦らなくていいよ。疑問も途中式も、何でも自由に話しかけてね！
+          </div>
+
+          <div class="timer-card">
+            <div class="timer-header">
+              <span>⏱️ 5分タイマー</span>
+              <span class="active-study-badge">
+                💡 取り組み中: <strong id="active-study-seconds-count">0秒</strong>
+              </span>
+            </div>
+            <div class="timer-display" id="timer-text">00:00</div>
+            <div class="timer-progress-bar">
+              <div class="timer-progress-fill" id="timer-progress-fill"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="care-fallback-btn" id="btn-care-fallback" style="flex: 1;">
+              🌿 ちょっと休憩・しんどい
+            </button>
+            <button class="btn-secondary" id="btn-fast-forward-5min" title="テスト用: 5分経過をシミュレート" style="padding: 6px 10px; font-size: 11px;">
+              ⏩ 5分スキップ(QA)
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Blackboard & Dialogue Stream -->
+        <div class="blackboard-pane" style="display: flex; flex-direction: column;">
+          <div class="blackboard-header">
+            <div class="blackboard-title" id="blackboard-question-title">比例・反比例の式と計算</div>
+            <div style="font-size: 12px; color: #a7f3d0;">黒板 1on1 ワークスペース</div>
+          </div>
+
+          <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;" id="blackboard-prompt">Q. 次の計算・方程式を解きなさい。</div>
+          <div class="chalk-formula" id="blackboard-formula" style="margin: 6px 0 14px 0; font-size: 26px;">y は x に反比例し、x = 3 のとき y = 4 です。x = 2 のときの y の値は？</div>
+
+          <!-- Dynamic Chalkboard Step Hint -->
+          <div class="blackboard-step-hint-box" id="blackboard-step-hint">
+            💡 途中式、疑問、答えなど、下の入力欄から自由に話しかけてね。
+          </div>
+
+          <!-- Interactive Dialogue Stream -->
+          <div class="lesson-dialogue-stream" id="lesson-dialogue-stream"></div>
+
+          <!-- Free-Form Lesson Chat Input Bar with Character Counter -->
+          <div class="lesson-chat-input-bar">
+            <div style="flex: 1; position: relative; display: flex; align-items: center;">
+              <input type="text" id="input-lesson-chat" class="chalk-input" style="width: 100%; padding-right: 65px;" placeholder="先生に聞く（例: 反比例ってなんだっけ？、なんで？、ヒント、答えなど）" maxlength="200">
+              <span id="chat-char-counter" style="position: absolute; right: 12px; font-size: 11px; color: #94a3b8; font-family: monospace; pointer-events: none;">0/200</span>
+            </div>
+            <button class="btn-primary" id="btn-send-lesson-chat" style="padding: 10px 20px; font-size: 14px; white-space: nowrap;">話す / 答える ✍️</button>
+          </div>
+
+          <!-- Suggestion Chips -->
+          <div class="suggestion-chips-bar" id="suggestion-chips-bar"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 5-MINUTE MILESTONE                                        -->
+    <!-- ========================================================= -->
+    <section id="screen-milestone" class="screen">
+      <div class="milestone-container">
+        <div class="milestone-badge">🎉 5分間達成！</div>
+        <div class="zoom-video-frame" style="padding: 32px; display: flex; flex-direction: column; align-items: center;">
+          <div class="teacher-portrait-frame portrait-large" style="margin-bottom: 12px;">
+            <img id="milestone-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+          </div>
+          <div class="speech-bubble" id="milestone-speech-text">
+            5分たったよ！どうする？今日はここで終わる？それとももう1問いく？
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; justify-content: center; width: 100%;">
+          <button class="btn-secondary" id="btn-finish-5min" style="padding: 14px 28px; font-size: 16px;">
+            🏁 今日はこれで終わる（満足！）
+          </button>
+          <button class="btn-primary" id="btn-extend-5min" style="padding: 14px 28px; font-size: 16px;">
+            🔥 もう1問だけやる！（延長）
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- SUMMARY & GROWTH ACKNOWLEDGEMENT                          -->
+    <!-- ========================================================= -->
+    <section id="screen-summary" class="screen">
+      <div class="summary-container">
+        <div class="summary-card">
+          <div style="text-align: center; margin-bottom: 24px; display: flex; flex-direction: column; align-items: center;">
+            <div class="teacher-portrait-frame portrait-medium" style="margin-bottom: 12px;">
+              <img id="summary-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+            </div>
+            <div class="speech-bubble" id="summary-speech-text" style="font-size: 16px;">
+              自分から5分やりきったね！最初の一歩としては満点だよ！
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-num" id="summary-session-time">5分</div>
+              <div class="stat-label">総セッション時間 (duration)</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" id="summary-active-time">240秒</div>
+              <div class="stat-label">問題取り組み時間 (active_study)</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" id="summary-questions-stat">1 / 1問</div>
+              <div class="stat-label">正答 / 取り組み問題数</div>
+            </div>
+          </div>
+
+          <div id="summary-growth-box" style="display: none;"></div>
+
+          <div style="background: var(--bg-main); border-radius: var(--radius-md); padding: 16px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); margin: 20px 0;">
+            <div><strong>開始トリガー:</strong> <span id="summary-start-trigger" style="color: var(--text-primary);">AI転換開始 (teacher_prompted)</span></div>
+            <div><strong>5分後延長:</strong> <span id="summary-is-extended" style="color: var(--text-primary);">あり (自主延長達成)</span></div>
+            <div><strong>次回のステップ:</strong> 忘却リスクを測定し、最適なタイミングで確認します。</div>
+          </div>
+
+          <div style="text-align: center;">
+            <button class="btn-primary" id="btn-restart-app">トップへ戻る 🏠</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Milestone Subjective Micro-Survey Modal -->
+  <div class="modal-overlay" id="survey-modal">
+    <div class="modal-box" style="max-width: 520px; text-align: left;">
+      <div style="text-align: center; margin-bottom: 12px;">
+        <span class="hero-tag" id="survey-day-badge">DAY 1</span>
+        <h3 style="color: #38bdf8; font-size: 16px;">💬 先生との対話についてのミニアンケート</h3>
+        <p style="font-size: 12px; color: #94a3b8;">1分で終わる簡単な質問です</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+        <div>
+          <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">
+            Q1. この先生は自分のことを分かってくれている感じがする？
+          </label>
+          <select id="survey-understanding-select" class="form-select" style="width: 100%;">
+            <option value="5">5: とてもそう感じる 😊</option>
+            <option value="4" selected>4: やや感じる</option>
+            <option value="3">3: 普通</option>
+            <option value="2">2: あまり感じない</option>
+            <option value="1">1: 全く感じない 😢</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">
+            Q2. この先生ならまた一緒に勉強したい？
+          </label>
+          <select id="survey-continue-select" class="form-select" style="width: 100%;">
+            <option value="5">5: ぜひまたやりたい 🔥</option>
+            <option value="4" selected>4: またやってもいい</option>
+            <option value="3">3: どちらでもない</option>
+            <option value="2">2: あまりやりたくない</option>
+            <option value="1">1: もうやりたくない</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">
+            Q3. 今日、先生に言われて印象に残ったこと（任意）
+          </label>
+          <input type="text" id="survey-impression-input" class="form-input" placeholder="例: 最初だるかったのに延長したことを覚えててくれた">
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <button class="btn-primary" id="btn-submit-survey" style="width: 100%;">回答して完了 ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Validation Dashboard Full Modal -->
+  <div class="val-modal-full" id="val-dashboard-modal">
+    <div style="position: sticky; top: 0; background: #0f172a; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 210;">
+      <span style="font-size: 14px; font-weight: 800; color: #38bdf8;">🔬 AI Teacher Validation Console</span>
+      <button class="btn-pill" id="btn-close-val-dashboard" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444;">✕ 閉じて生徒画面へ戻る</button>
+    </div>
+    <div id="val-dashboard-content"></div>
+  </div>
+
+  <!-- Care Fallback Modal -->
+  <div class="modal-overlay" id="care-modal">
+    <div class="modal-box" style="display: flex; flex-direction: column; align-items: center;">
+      <div class="teacher-portrait-frame portrait-medium" style="margin-bottom: 12px;">
+        <img id="care-teacher-img" src="assets/teachers/sota.png?v=20260816_4teachers" alt="先生" class="teacher-portrait-img">
+      </div>
+      <h3 style="margin-bottom: 8px; color: var(--accent-amber);">🌿 ちょっとひと息</h3>
+      <div id="care-modal-text" style="font-size: 14px; line-height: 1.6; color: var(--text-primary); margin-bottom: 20px;">
+        しんどい時は深呼吸しよう。いつでも休んでいいからね。
+      </div>
+      <button class="btn-primary" id="btn-close-care">深呼吸したから黒板に戻る 😊</button>
+    </div>
+  </div>
+
+  <!-- Mini Telemetry Drawer -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="analytics-drawer" id="analytics-drawer">
+    <div class="drawer-header">
+      <h3 style="font-size: 16px; font-weight: 700;">📊 リアルタイム簡易ログ</h3>
+      <button class="btn-pill" id="btn-close-analytics" style="padding: 4px 10px;">✕ 閉じる</button>
+    </div>
+    <div class="drawer-content">
+      <div class="metric-panel">
+        <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">📈 基本指標</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+          <div>App Opens: <strong id="metric-app-opens">0</strong></div>
+          <div>Teacher Contacts: <strong id="metric-teacher-contacts">0</strong></div>
+          <div>Study Starts: <strong id="metric-study-starts">0</strong></div>
+          <div>AI転換率: <strong id="metric-prompt-conv-rate" style="color: #10b981;">0%</strong></div>
+          <div>自主開始数: <strong id="metric-self-declared-starts">0</strong></div>
+          <div>5分完走数: <strong id="metric-5min-completes">0</strong></div>
+          <div>自主延長数: <strong id="metric-study-extends">0</strong></div>
+          <div>総アクティブ時間: <strong id="metric-total-active-seconds">0s</strong></div>
+        </div>
+      </div>
+      <div class="metric-panel">
+        <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">⚡ 直近イベントストリーム</h4>
+        <div class="event-log-list" id="drawer-event-list"></div>
+      </div>
+      <div>
+        <button class="btn-secondary" id="btn-reset-data" style="width: 100%; font-size: 12px; color: #ef4444;">
+          🗑️ 蓄積データを初期化する
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Scripts -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+<script>
+
+/* =========================================
+ * SCRIPT: js/store.js
+ * ========================================= */
+/**
+ * Data Layer & Persistence Store for AI Teacher App
+ * Supports LocalStorage caching, Custom Teacher Profiles, and SQLite backend syncing.
+ */
+
+class DataStore {
+  constructor() {
+    this.STORAGE_KEYS = {
+      USERS: 'ai_teacher_users',
+      PERSONA_MEMORIES: 'ai_teacher_persona_memories',
+      SESSIONS: 'ai_teacher_learning_sessions',
+      RECORDS: 'ai_teacher_learning_records',
+      EVENTS: 'ai_teacher_behavior_events',
+      CURRENT_USER_ID: 'ai_teacher_active_user_id',
+      CUSTOM_TEACHER_PROFILE: 'ai_teacher_custom_profile'
+    };
+    this.init();
+  }
+
+  init() {
+    if (!localStorage.getItem(this.STORAGE_KEYS.USERS)) {
+      const defaultUser = {
+        id: this.generateUUID(),
+        nickname: 'ゆう',
+        created_at: new Date().toISOString()
+      };
+      this.save(this.STORAGE_KEYS.USERS, [defaultUser]);
+      localStorage.setItem(this.STORAGE_KEYS.CURRENT_USER_ID, defaultUser.id);
+    }
+
+    if (!localStorage.getItem(this.STORAGE_KEYS.PERSONA_MEMORIES)) {
+      this.save(this.STORAGE_KEYS.PERSONA_MEMORIES, []);
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.SESSIONS)) {
+      this.save(this.STORAGE_KEYS.SESSIONS, []);
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.RECORDS)) {
+      this.save(this.STORAGE_KEYS.RECORDS, []);
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.EVENTS)) {
+      this.save(this.STORAGE_KEYS.EVENTS, []);
+    }
+  }
+
+  generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  get(key) {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : [];
+    } catch (e) {
+      console.error('Error reading from localStorage', e);
+      return [];
+    }
+  }
+
+  save(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.error('Error saving to localStorage', e);
+    }
+  }
+
+  getCurrentUser() {
+    const userId = localStorage.getItem(this.STORAGE_KEYS.CURRENT_USER_ID);
+    const users = this.get(this.STORAGE_KEYS.USERS);
+    return users.find(u => u.id === userId) || users[0];
+  }
+
+  updateCurrentUser(nickname) {
+    const user = this.getCurrentUser();
+    user.nickname = nickname;
+    const users = this.get(this.STORAGE_KEYS.USERS).map(u => u.id === user.id ? user : u);
+    this.save(this.STORAGE_KEYS.USERS, users);
+    return user;
+  }
+
+  // Custom Teacher Profile
+  getCustomTeacherProfile() {
+    try {
+      const item = localStorage.getItem(this.STORAGE_KEYS.CUSTOM_TEACHER_PROFILE);
+      return item ? JSON.parse(item) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  saveCustomTeacherProfile(profile) {
+    this.save(this.STORAGE_KEYS.CUSTOM_TEACHER_PROFILE, profile);
+    // Also update persona memory
+    const user = this.getCurrentUser();
+    this.savePersonaMemory({
+      user_id: user.id,
+      preferred_archetype: profile.baseId,
+      custom_profile: profile,
+      updated_at: new Date().toISOString()
+    });
+  }
+
+  clearCustomTeacherProfile() {
+    localStorage.removeItem(this.STORAGE_KEYS.CUSTOM_TEACHER_PROFILE);
+  }
+
+  // Persona Memory
+  savePersonaMemory(memory) {
+    const memories = this.get(this.STORAGE_KEYS.PERSONA_MEMORIES);
+    const index = memories.findIndex(m => m.user_id === memory.user_id);
+    if (index >= 0) {
+      memories[index] = { ...memories[index], ...memory, updated_at: new Date().toISOString() };
+    } else {
+      memories.push({ ...memory, updated_at: new Date().toISOString() });
+    }
+    this.save(this.STORAGE_KEYS.PERSONA_MEMORIES, memories);
+  }
+
+  getPersonaMemory(userId) {
+    const memories = this.get(this.STORAGE_KEYS.PERSONA_MEMORIES);
+    return memories.find(m => m.user_id === userId) || null;
+  }
+
+  // Learning Session
+  createSession({ userId, teacherArchetype, subject, unitId, unitName, startTrigger }) {
+    const session = {
+      id: this.generateUUID(),
+      user_id: userId,
+      teacher_archetype: teacherArchetype,
+      subject: subject || 'math',
+      unit_id: unitId || 'linear_equations_1',
+      unit_name: unitName || '一次方程式（カッコと分配法則）',
+      started_at: new Date().toISOString(),
+      ended_at: null,
+      duration_seconds: 0,
+      active_study_seconds: 0,
+      start_trigger: startTrigger,
+      is_extended_after_5min: false,
+      questions_attempted: 0,
+      questions_correct: 0,
+      created_at: new Date().toISOString()
+    };
+    const sessions = this.get(this.STORAGE_KEYS.SESSIONS);
+    sessions.push(session);
+    this.save(this.STORAGE_KEYS.SESSIONS, sessions);
+    return session;
+  }
+
+  updateSession(sessionId, updates) {
+    const sessions = this.get(this.STORAGE_KEYS.SESSIONS);
+    const index = sessions.findIndex(s => s.id === sessionId);
+    if (index >= 0) {
+      sessions[index] = { ...sessions[index], ...updates };
+      this.save(this.STORAGE_KEYS.SESSIONS, sessions);
+      return sessions[index];
+    }
+    return null;
+  }
+
+  getSession(sessionId) {
+    const sessions = this.get(this.STORAGE_KEYS.SESSIONS);
+    return sessions.find(s => s.id === sessionId) || null;
+  }
+
+  getAllSessions() {
+    return this.get(this.STORAGE_KEYS.SESSIONS);
+  }
+
+  // Learning Records
+  createLearningRecord({ sessionId, userId, questionId, questionText, userAnswer, isCorrect, thoughtProcess, hintCount, timeTakenSeconds }) {
+    const record = {
+      id: this.generateUUID(),
+      session_id: sessionId,
+      user_id: userId,
+      question_id: questionId,
+      question_text: questionText,
+      user_answer: userAnswer,
+      is_correct: isCorrect,
+      thought_process: thoughtProcess || null,
+      hint_count: hintCount || 0,
+      time_taken_seconds: timeTakenSeconds || 0,
+      created_at: new Date().toISOString()
+    };
+    const records = this.get(this.STORAGE_KEYS.RECORDS);
+    records.push(record);
+    this.save(this.STORAGE_KEYS.RECORDS, records);
+    return record;
+  }
+
+  getRecordsForSession(sessionId) {
+    const records = this.get(this.STORAGE_KEYS.RECORDS);
+    return records.filter(r => r.session_id === sessionId);
+  }
+
+  // Behavior Events
+  logEvent(eventName, payload = {}, sessionId = null) {
+    const user = this.getCurrentUser();
+    const event = {
+      id: this.generateUUID(),
+      user_id: user ? user.id : 'anonymous',
+      session_id: sessionId,
+      event_name: eventName,
+      event_payload: payload,
+      timestamp: new Date().toISOString()
+    };
+    const events = this.get(this.STORAGE_KEYS.EVENTS);
+    events.push(event);
+    this.save(this.STORAGE_KEYS.EVENTS, events);
+
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      window.dispatchEvent(new CustomEvent('ai_teacher_event_logged', { detail: event }));
+    }
+
+    return event;
+  }
+
+  getAllEvents() {
+    return this.get(this.STORAGE_KEYS.EVENTS);
+  }
+
+  clearAllData() {
+    localStorage.clear();
+    this.init();
+  }
+}
+
+window.dataStore = new DataStore();
+
+
+/* =========================================
+ * SCRIPT: js/analytics.js
+ * ========================================= */
+/**
+ * Event Tracking & Behavioral Transformation Analytics Service
+ */
+
+class AnalyticsTracker {
+  constructor(store) {
+    this.store = store;
+    this.activeSessionId = null;
+    this.activeStudyTimer = null;
+    this.sessionTimer = null;
+    this.sessionStartTime = null;
+    this.activeStudyStartTime = null;
+    this.accumulatedActiveSeconds = 0;
+    this.accumulatedSessionSeconds = 0;
+    this.isStudying = false;
+  }
+
+  trackCustomEvent(eventName, payload = {}) {
+    try {
+      if (this.store && typeof this.store.logEvent === 'function') {
+        return this.store.logEvent(eventName, payload, this.activeSessionId);
+      }
+    } catch (e) {
+      console.warn('[AnalyticsTracker] Failed to log custom event:', e);
+    }
+  }
+
+  // 1. App Open
+  trackAppOpen(extra = {}) {
+    return this.store.logEvent('app_open', {
+      userAgent: navigator.userAgent,
+      screen: 'lobby',
+      ...extra
+    });
+  }
+
+  // 2. Teacher Contact
+  trackTeacherContact(teacherArchetype, moodSelection, intentChoice) {
+    return this.store.logEvent('teacher_contact', {
+      teacherArchetype,
+      moodSelection,
+      intentChoice, // 'study' | 'chat' | 'casual'
+    });
+  }
+
+  // 3. Study Offer
+  trackStudyOffer(teacherArchetype, triggerReason, offerText) {
+    return this.store.logEvent('study_offer', {
+      teacherArchetype,
+      triggerReason, // '5min_promise' | 'direct_start'
+      offerText
+    });
+  }
+
+  // 4. Study Start
+  trackStudyStart({ teacherArchetype, subject, unitId, unitName, startTrigger }) {
+    const user = this.store.getCurrentUser();
+    const session = this.store.createSession({
+      userId: user.id,
+      teacherArchetype,
+      subject,
+      unitId,
+      unitName,
+      startTrigger // 'self_declared' | 'teacher_prompted'
+    });
+
+    this.activeSessionId = session.id;
+    this.sessionStartTime = Date.now();
+    this.accumulatedSessionSeconds = 0;
+    this.accumulatedActiveSeconds = 0;
+    this.startActiveStudyTracking();
+
+    this.store.logEvent('study_start', {
+      sessionId: session.id,
+      subject,
+      unitId,
+      unitName,
+      startTrigger, // 'self_declared' | 'teacher_prompted'
+    }, session.id);
+
+    return session;
+  }
+
+  // Active Study Time Tracking
+  startActiveStudyTracking() {
+    if (this.isStudying) return;
+    this.isStudying = true;
+    this.activeStudyStartTime = Date.now();
+  }
+
+  pauseActiveStudyTracking() {
+    if (!this.isStudying) return;
+    const delta = Math.floor((Date.now() - this.activeStudyStartTime) / 1000);
+    this.accumulatedActiveSeconds += Math.max(0, delta);
+    this.isStudying = false;
+    this.activeStudyStartTime = null;
+    this.syncSessionTime();
+  }
+
+  resumeActiveStudyTracking() {
+    if (this.isStudying) return;
+    this.isStudying = true;
+    this.activeStudyStartTime = Date.now();
+  }
+
+  syncSessionTime() {
+    if (!this.activeSessionId || !this.sessionStartTime) return;
+    const currentTotal = Math.floor((Date.now() - this.sessionStartTime) / 1000);
+    let activeSec = this.accumulatedActiveSeconds;
+    if (this.isStudying && this.activeStudyStartTime) {
+      activeSec += Math.floor((Date.now() - this.activeStudyStartTime) / 1000);
+    }
+
+    this.store.updateSession(this.activeSessionId, {
+      duration_seconds: currentTotal,
+      active_study_seconds: activeSec
+    });
+  }
+
+  // 5. Question Answered
+  trackQuestionAnswered({ questionId, isCorrect, thoughtProcess, hintCount, timeSpentSeconds }) {
+    this.syncSessionTime();
+    return this.store.logEvent('question_answered', {
+      questionId,
+      isCorrect,
+      thoughtProcess,
+      hintCount,
+      timeSpentSeconds
+    }, this.activeSessionId);
+  }
+
+  // 6. 5-Min Complete
+  track5MinComplete(questionsSolvedCount) {
+    this.syncSessionTime();
+    return this.store.logEvent('5min_complete', {
+      totalQuestionsSolved: questionsSolvedCount,
+      sessionDuration: Math.floor((Date.now() - this.sessionStartTime) / 1000),
+      activeDuration: this.accumulatedActiveSeconds
+    }, this.activeSessionId);
+  }
+
+  // 7. Study Extend
+  trackStudyExtend(extendRound = 1) {
+    this.syncSessionTime();
+    if (this.activeSessionId) {
+      this.store.updateSession(this.activeSessionId, {
+        is_extended_after_5min: true
+      });
+    }
+    return this.store.logEvent('study_extend', {
+      extendRound,
+      currentTotalDuration: Math.floor((Date.now() - this.sessionStartTime) / 1000)
+    }, this.activeSessionId);
+  }
+
+  // 8. Study End
+  trackStudyEnd(summaryData = {}) {
+    this.pauseActiveStudyTracking();
+    this.syncSessionTime();
+    const totalDuration = this.sessionStartTime ? Math.floor((Date.now() - this.sessionStartTime) / 1000) : 0;
+    
+    if (this.activeSessionId) {
+      this.store.updateSession(this.activeSessionId, {
+        ended_at: new Date().toISOString(),
+        duration_seconds: totalDuration,
+        active_study_seconds: this.accumulatedActiveSeconds,
+        questions_attempted: summaryData.questionsAttempted || 0,
+        questions_correct: summaryData.questionsCorrect || 0
+      });
+    }
+
+    const event = this.store.logEvent('study_end', {
+      totalDuration,
+      activeStudyDuration: this.accumulatedActiveSeconds,
+      questionsAttempted: summaryData.questionsAttempted || 0,
+      questionsCorrect: summaryData.questionsCorrect || 0,
+      ...summaryData
+    }, this.activeSessionId);
+
+    const endedSessionId = this.activeSessionId;
+    this.activeSessionId = null;
+    this.sessionStartTime = null;
+
+    return { event, sessionId: endedSessionId };
+  }
+
+  // Conversion Metric Calculations
+  getAnalyticsSummary() {
+    const events = this.store.getAllEvents();
+    const sessions = this.store.getAllSessions();
+
+    const appOpens = events.filter(e => e.event_name === 'app_open').length;
+    const teacherContacts = events.filter(e => e.event_name === 'teacher_contact').length;
+    const studyOffers = events.filter(e => e.event_name === 'study_offer').length;
+    const studyStarts = events.filter(e => e.event_name === 'study_start').length;
+    const fiveMinCompletes = events.filter(e => e.event_name === '5min_complete').length;
+    const studyExtends = events.filter(e => e.event_name === 'study_extend').length;
+
+    const promptedContacts = events.filter(e => e.event_name === 'teacher_contact' && e.event_payload?.intentChoice !== 'study').length;
+    const promptedStarts = sessions.filter(s => s.start_trigger === 'teacher_prompted').length;
+    const promptConversionRate = promptedContacts > 0 ? ((promptedStarts / promptedContacts) * 100).toFixed(1) : '0.0';
+
+    const selfDeclaredStarts = sessions.filter(s => s.start_trigger === 'self_declared').length;
+
+    const totalActiveSeconds = sessions.reduce((acc, s) => acc + (s.active_study_seconds || 0), 0);
+    const totalDurationSeconds = sessions.reduce((acc, s) => acc + (s.duration_seconds || 0), 0);
+
+    return {
+      appOpens,
+      teacherContacts,
+      studyOffers,
+      studyStarts,
+      fiveMinCompletes,
+      studyExtends,
+      promptedContacts,
+      promptedStarts,
+      promptConversionRate,
+      selfDeclaredStarts,
+      totalSessions: sessions.length,
+      totalActiveSeconds,
+      totalDurationSeconds
+    };
+  }
+}
+
+window.analyticsTracker = new AnalyticsTracker(window.dataStore);
+
+
+/* =========================================
+ * SCRIPT: js/teacher_assets.js
+ * ========================================= */
+/**
+ * Official AI Teacher Assets Repository (4 Official Teachers: Sota, Yui, Ryo, Ayaka)
+ * Safely falls back to 'sota' if legacy 'ken' or unknown ID is passed.
+ */
+const TEACHER_ASSETS = {
+  sota: {
+    id: 'sota',
+    name: 'ソウタ',
+    subtitle: '友達のように話せる 頼れるお兄さんタイプ',
+    description: '気さくで話しやすて、なんでも聞きやすい。つまずいても「大丈夫、一緒にいこ！」とそばで支えてくれる存在。',
+    badges: ['フレンドリー', '親しみやすい'],
+    gender: 'male',
+    firstPerson: '俺',
+    image: 'assets/teachers/sota.png',
+    imageWebp: 'assets/teachers/sota.webp',
+    accent: 'blue',
+    themeColor: '#3b82f6',
+    secondaryColor: '#60a5fa'
+  },
+  yui: {
+    id: 'yui',
+    name: 'ユイ',
+    subtitle: 'やさしくて丁寧に教えてくれる 安心感のある先生タイプ',
+    description: '一人ひとりのペースに合わせてくれるやさしい先生。わかるまで何度でも、根気強くサポートしてくれるよ。',
+    badges: ['やさしい', '丁寧'],
+    gender: 'female',
+    firstPerson: '私',
+    image: 'assets/teachers/yui.png',
+    imageWebp: 'assets/teachers/yui.webp',
+    accent: 'pink',
+    themeColor: '#f43f5e',
+    secondaryColor: '#fda4af'
+  },
+  ryo: {
+    id: 'ryo',
+    name: 'リョウ',
+    subtitle: 'クールで論理的に導く 頭脳派タイプ',
+    description: 'ムダがなくて、ポイントをズバッと解説。考え方を論理的に整理してくれて、「なるほど！」が増えていく。',
+    badges: ['論理的', 'クール'],
+    gender: 'male',
+    firstPerson: '僕',
+    image: 'assets/teachers/ryo.png',
+    imageWebp: 'assets/teachers/ryo.webp',
+    accent: 'purple',
+    themeColor: '#8b5cf6',
+    secondaryColor: '#c084fc'
+  },
+  ayaka: {
+    id: 'ayaka',
+    name: 'アヤカ',
+    subtitle: '元気で明るく励ましてくれる 応援団長タイプ',
+    description: 'いつも明るくて、前向きな言葉で背中を押してくれる先生。「できるよ！」って信じてくれるよ。',
+    badges: ['元気', 'ポジティブ'],
+    gender: 'female',
+    firstPerson: '私',
+    image: 'assets/teachers/ayaka.png',
+    imageWebp: 'assets/teachers/ayaka.webp',
+    accent: 'green',
+    themeColor: '#10b981',
+    secondaryColor: '#34d399'
+  }
+};
+
+const ASSET_CACHE_VERSION = 'v=20260816_4teachers';
+
+function getTeacherImageSrc(teacherId) {
+  // Safe fallback to 'sota' if teacherId is 'ken' or undefined
+  const safeId = (teacherId && TEACHER_ASSETS[teacherId]) ? teacherId : 'sota';
+  const asset = TEACHER_ASSETS[safeId];
+  const basePath = asset.image || `assets/teachers/${safeId}.png`;
+  return `${basePath}?${ASSET_CACHE_VERSION}`;
+}
+
+window.TEACHER_ASSETS = TEACHER_ASSETS;
+window.BASE_CHARACTERS = TEACHER_ASSETS;
+window.getTeacherImageSrc = getTeacherImageSrc;
+
+
+/* =========================================
+ * SCRIPT: js/characters.js
+ * ========================================= */
+/**
+ * Character Engine: 4 Official Teachers Management (Sota, Yui, Ryo, Ayaka)
+ * Uses TEACHER_ASSETS defined in teacher_assets.js
+ */
+
+const SPEECH_STYLES = {
+  style_a: {
+    id: 'style_a',
+    title: '寄り添い・優しさ',
+    tag: '安心感',
+    quote: '「そっか。じゃあ今日は5分だけ一緒にやろう。」',
+    pitchMod: 0,
+    rateMod: -0.05
+  },
+  style_b: {
+    id: 'style_b',
+    title: '共感・フラット友達',
+    tag: '気楽さ',
+    quote: '「わかる。今日はやる気出ないよな。……まあ1問だけやる？」',
+    pitchMod: 0.05,
+    rateMod: 0.05
+  },
+  style_c: {
+    id: 'style_c',
+    title: 'ツッコミ・信頼感',
+    tag: '距離感近め',
+    quote: '「またそれ言ってる。でも前もそう言いながら結局やったよね。」',
+    pitchMod: 0.05,
+    rateMod: 0.1
+  },
+  style_d: {
+    id: 'style_d',
+    title: 'クール・挑戦的',
+    tag: '背中押し',
+    quote: '「……で、本当に今日はやらない？」',
+    pitchMod: -0.05,
+    rateMod: 0
+  }
+};
+
+function getFirstPerson(customProfile) {
+  const safeId = (customProfile?.baseId && window.TEACHER_ASSETS?.[customProfile.baseId]) ? customProfile.baseId : 'sota';
+  const base = window.TEACHER_ASSETS[safeId];
+  if (base?.gender === 'female') return '私';
+  if (base?.id === 'ryo') return '僕';
+  return '俺';
+}
+
+function generatePersonalitySampleSpeech(personality, speechStyleId = 'style_a', nickname = 'ゆう', customProfile = null) {
+  const { gentle_strict, quiet_energetic, teacher_friend, praise_level, serious_playful } = personality;
+  const safeId = (customProfile?.baseId && window.TEACHER_ASSETS?.[customProfile.baseId]) ? customProfile.baseId : 'sota';
+  const base = window.TEACHER_ASSETS[safeId];
+  const isFemale = (base?.gender === 'female');
+
+  if (teacher_friend >= 4 && serious_playful >= 4) {
+    if (isFemale) return `「お、サボりモード発動？笑 まぁ5分だけ付き合ってくれたら許しちゃう！」`;
+    return `「お、サボりモード発動？笑 まぁ5分だけ付き合ってくれたら許す！」`;
+  }
+  if (teacher_friend >= 4) {
+    if (speechStyleId === 'style_c') {
+      return `「${nickname}、まただるいって言ってる〜笑 でも前もそう言って結局解けたよね？」`;
+    }
+    if (isFemale) return `「わかるよ〜だるい日もあるよね。まあ5分だけサクッとやってすぐ終わろっか！」`;
+    return `「わかるわ〜だるいよな。まあ5分だけサクッとやって即終わろーぜ。」`;
+  }
+  if (gentle_strict >= 4 && teacher_friend <= 2) {
+    if (speechStyleId === 'style_d') return `「やる気が出るのを待ってても始まらないよ。……で、本当にやらないの？」`;
+    return `「気分に左右されてちゃダメだよ。まずは机に向かって、1問だけ集中しよう。」`;
+  }
+  if (gentle_strict <= 2 && teacher_friend <= 2) {
+    return `「今日は少し疲れが出ているのかな。${nickname}さん、5分だけ無理のないペースで進めてみようか。」`;
+  }
+  if (quiet_energetic >= 4 && praise_level >= 4) {
+    if (isFemale) return `「${nickname}ちゃん！今日も会えて嬉しいよ！5分だけ元気いっぱいでいこっ！」`;
+    return `「おっしゃー！${nickname}！今日も会えて嬉しいぞ！5分だけ全開でやってみようぜ！」`;
+  }
+  if (quiet_energetic <= 2) {
+    return `「焦らなくて大丈夫。静かに、自分のペースで5分だけやってみよう。」`;
+  }
+
+  return `「そっか。じゃあ今日は5分だけ一緒に進めてみようか。」`;
+}
+
+function generateFirstEncounterSpeech(customProfile, nickname = 'ゆう') {
+  const { personality } = customProfile;
+  const { gentle_strict, teacher_friend, serious_playful } = personality;
+  const safeId = (customProfile?.baseId && window.TEACHER_ASSETS?.[customProfile.baseId]) ? customProfile.baseId : 'sota';
+  const base = window.TEACHER_ASSETS[safeId];
+  const isFemale = (base?.gender === 'female');
+
+  if (teacher_friend >= 4 && serious_playful >= 4) {
+    if (isFemale) return `……はじめまして、${nickname}！${base.name}だよ、今日からよろしくね！で、今日勉強する気ある？ない？笑`;
+    return `……おっ！はじめまして、${nickname}！${base.name}だ、今日からよろしくな！で、今日勉強する気ある？ない？笑`;
+  }
+  if (teacher_friend >= 4) {
+    if (isFemale) return `……${nickname}、待ってたよ！今日からよろしくね。で、今日は勉強する気分？それともちょっとお話しする？`;
+    return `……よっ、${nickname}！待ってたわ。今日からよろしくな。で、今日は勉強する気分？それともだるい？`;
+  }
+  if (gentle_strict <= 2) {
+    return `……はじめまして、${nickname}さん。会えてとても嬉しいよ。今日はどんな感じかな？無理せず5分だけ、一緒にやってみようね。`;
+  }
+  if (gentle_strict >= 4) {
+    return `……はじめまして、${nickname}。今日からよろしく。やる気は動いてからついてくるものだよ。まずは5分だけ、しっかり集中しよう。`;
+  }
+
+  if (isFemale) return `……はじめまして、${nickname}。今日からよろしくね。じゃあ始めようか。今日は5分だけでいいよ。`;
+  return `……はじめまして、${nickname}。今日からよろしく。じゃあ始めようか。今日は5分だけでいいよ。`;
+}
+
+function generateReturningGreeting(customProfile, pastBehavior, studentName = 'ゆう') {
+  const { personality } = customProfile;
+  const safeId = (customProfile?.baseId && window.TEACHER_ASSETS?.[customProfile.baseId]) ? customProfile.baseId : 'sota';
+  const base = window.TEACHER_ASSETS[safeId];
+  const isFemale = (base?.gender === 'female');
+  const isFriend = (personality?.teacher_friend >= 4);
+  const isGentle = (personality?.gentle_strict <= 2);
+
+  if (pastBehavior && pastBehavior.wasExtended) {
+    if (isFemale) {
+      if (isFriend) return `あ、${studentName}！前回「なんとなく」って言ってたのに結局延長して頑張ったよね！今日も5分だけサクッとやっちゃお！`;
+      return `${studentName}さん、来てくれて嬉しいな。前回は自分から延長して頑張ってくれたよね。今日も5分だけ一緒に進めようか。`;
+    }
+    if (isFriend) {
+      return `よっ、${studentName}！前回「なんとなく」って言いながら結局延長してんの最高だったわ！今日も5分だけサクッとやっとく？`;
+    }
+    return `${studentName}、前回は自発的に延長して課題をやりきったね。今日も5分間、集中して進めよう。`;
+  }
+
+  if (isFemale) {
+    if (isFriend) return `あ、${studentName}！今日も来てくれて嬉しいな！5分サクッと片付けちゃお！`;
+    if (isGentle) return `${studentName}さん、今日も会えて嬉しいよ。自分のペースでゆっくりやろうね。`;
+    return `${studentName}、歓迎するよ。今日も5分間、要点を押さえて進めようね。`;
+  }
+
+  if (isFriend) {
+    return `よっ、${studentName}！今日も来てくれてサンキューな！5分サクッと片付けちゃお！`;
+  }
+  if (isGentle) {
+    return `${studentName}さん、今日も会えて嬉しいよ。自分のペースでゆっくりやろうね。`;
+  }
+  return `${studentName}、歓迎するよ。今日も5分間、要点を押さえて進めよう。`;
+}
+
+function renderTeacherPortrait(teacherId, sizeClass = 'medium', extraStyles = '') {
+  const safeId = (teacherId && window.TEACHER_ASSETS?.[teacherId]) ? teacherId : 'sota';
+  const asset = window.TEACHER_ASSETS[safeId];
+  const src = window.getTeacherImageSrc(safeId);
+  return `
+    <div class="teacher-portrait-frame portrait-${sizeClass}" style="${extraStyles}">
+      <img src="${src}" alt="${asset.name}" class="teacher-portrait-img">
+    </div>
+  `;
+}
+
+const CHARACTERS = {
+  passionate: { ...window.TEACHER_ASSETS?.sota, dialogues: { welcome: (n) => `${n}！来てくれたな！待ってたぞ！今日も顔見せてくれて最高だ！` } },
+  cool: { ...window.TEACHER_ASSETS?.ryo, dialogues: { welcome: (n) => `${n}、来てくれたね。歓迎するよ。今日もよろしく。` } },
+  gentle: { ...window.TEACHER_ASSETS?.yui, dialogues: { welcome: (n) => `${n}さん、来てくれてありがとう。会えて嬉しいよ。` } },
+  casual: { ...window.TEACHER_ASSETS?.ayaka, dialogues: { welcome: (n) => `よっ、${n}！今日も来てくれてサンキューな！` } }
+};
+
+window.SPEECH_STYLES = SPEECH_STYLES;
+window.CHARACTERS = CHARACTERS;
+window.getFirstPerson = getFirstPerson;
+window.generatePersonalitySampleSpeech = generatePersonalitySampleSpeech;
+window.generateFirstEncounterSpeech = generateFirstEncounterSpeech;
+window.generateReturningGreeting = generateReturningGreeting;
+window.renderTeacherPortrait = renderTeacherPortrait;
+
+
+/* =========================================
+ * SCRIPT: js/pedagogy.js
+ * ========================================= */
+/**
+ * Multi-Unit Math Curriculum, Problem Sets & Misconception Models
+ */
+
+const MATH_UNITS = [
+  {
+    id: 'linear_equations_1',
+    name: '一次方程式（カッコと分配法則）',
+    category: '方程式',
+    description: 'カッコの前の数を分配して外す計算の基本',
+    defaultQuestionId: 'q_linear_eq_01'
+  },
+  {
+    id: 'algebraic_expressions',
+    name: '文字式の計算（同類項の整理）',
+    category: '文字と式',
+    description: '文字の種類ごとに項をまとめて簡単にする計算',
+    defaultQuestionId: 'q_algebra_01'
+  },
+  {
+    id: 'proportions',
+    name: '比例・反比例の式と計算',
+    category: '関数',
+    description: '反比例の式 y = a/x と比例定数の計算',
+    defaultQuestionId: 'q_prop_01'
+  },
+  {
+    id: 'positive_negative',
+    name: '正負の数の四則混合計算',
+    category: '数と計算',
+    description: '掛け算先行とマイナスの引き算（符号変化）',
+    defaultQuestionId: 'q_pos_neg_01'
+  },
+  {
+    id: 'linear_eq_applications',
+    name: '一次方程式の利用（代金・個数文章題）',
+    category: '方程式・文章題',
+    description: '文章から数量の関係を見つけて方程式を立てる',
+    defaultQuestionId: 'q_app_01'
+  }
+];
+
+const MATH_QUESTIONS = [
+  // 1. Linear Equations (Parentheses & Distributive)
+  {
+    id: 'q_linear_eq_01',
+    unitId: 'linear_equations_1',
+    unitName: '一次方程式（カッコと分配法則）',
+    latex: '3(x - 2) = 12',
+    displayText: '3(x - 2) = 12',
+    questionPrompt: '次の方程式を解きなさい。',
+    formatType: 'basic',
+    targetAnswer: '6',
+    acceptedAnswers: ['6', 'x=6', 'x = 6'],
+    analogyTip: '📦 カッコはお菓子の箱！外の3を中のxと-2の両方に掛け算しよう（3x - 6 = 12）。',
+    steps: [
+      { step: 1, text: '左辺のカッコを外す: 3x - 6 = 12' },
+      { step: 2, text: '-6 を右辺に移項: 3x = 12 + 6 => 3x = 18' },
+      { step: 3, text: '両辺を 3 で割る: x = 6' }
+    ],
+    misconceptions: [
+      {
+        id: 'distributive_law_second_term_omission',
+        label: '3をxだけにかけた（-2に掛け忘れ）',
+        detectedAnswers: ['4', '14/3', '14'],
+        explanation: 'カッコの前の3は、中の「x」と「-2」の両方に掛け算するよ（分配法則）。',
+        promptFeedback: '後ろの項（-2）にも 3 を掛けて 3x - 6 にしよう！'
+      }
+    ]
+  },
+  // 2. Algebraic Expressions (Combining Like Terms)
+  {
+    id: 'q_algebra_01',
+    unitId: 'algebraic_expressions',
+    unitName: '文字式の計算（同類項の整理）',
+    latex: '4a + 3b - 2a + 5b',
+    displayText: '4a + 3b - 2a + 5b',
+    questionPrompt: '次の文字式を同類項をまとめて簡単にしなさい。',
+    formatType: 'basic',
+    targetAnswer: '2a+8b',
+    acceptedAnswers: ['2a+8b', '2a + 8b', '8b+2a', '8b + 2a'],
+    analogyTip: '🍎 りんご(a)とみかん(b)は別々の箱！同じ文字同士で計算しよう（4a-2a=2a, 3b+5b=8b）。',
+    steps: [
+      { step: 1, text: 'a の項をまとめる: (4 - 2)a = 2a' },
+      { step: 2, text: 'b の項をまとめる: (3 + 5)b = 8b' },
+      { step: 3, text: '合わせて 2a + 8b' }
+    ],
+    misconceptions: [
+      {
+        id: 'combine_different_variables',
+        label: '文字が違う a と b を足してしまった（10abなど）',
+        detectedAnswers: ['10ab', '10', '10a+b'],
+        explanation: '文字が違う項（aとb）は足し算して1つにまとめられないよ。',
+        promptFeedback: 'a同士、b同士で分けて計算しよう！'
+      }
+    ]
+  },
+  // 3. Proportions & Inverse Proportions
+  {
+    id: 'q_prop_01',
+    unitId: 'proportions',
+    unitName: '比例・反比例の式と計算',
+    latex: 'y = \\frac{12}{x} \\quad (x = 2 \\text{ のときの } y = ?)',
+    displayText: 'y は x に反比例し、x = 3 のとき y = 4 です。x = 2 のときの y の値を求めなさい。',
+    questionPrompt: 'x = 2 のときの y の値を求めなさい。',
+    formatType: 'basic',
+    targetAnswer: '6',
+    acceptedAnswers: ['6', 'y=6', 'y = 6'],
+    analogyTip: '📐 反比例は「面積が決まった長方形」！たて×横 = 12 だから、横が2ならたては6になるよ。',
+    steps: [
+      { step: 1, text: '比例定数 a を求める: a = x × y = 3 × 4 = 12' },
+      { step: 2, text: '反比例の式を作る: y = 12 / x' },
+      { step: 3, text: 'x = 2 を代入: y = 12 / 2 = 6' }
+    ],
+    misconceptions: [
+      {
+        id: 'proportions_inverse_confusion',
+        label: '比例の式 y = ax と勘違いした',
+        detectedAnswers: ['8/3', '2.67', '8', '24', 'y=ax', 'y = ax'],
+        explanation: '反比例の基本式は y = a / x （x × y = a）だよ。',
+        promptFeedback: '反比例は「x と y を掛け算すると一定（12）」になるよ！'
+      }
+    ]
+  },
+  // 4. Positive and Negative Numbers
+  {
+    id: 'q_pos_neg_01',
+    unitId: 'positive_negative',
+    unitName: '正負の数の四則混合計算',
+    latex: '(-8) - (-5) \\times 2',
+    displayText: '(-8) - (-5) × 2',
+    questionPrompt: '次の計算をしなさい。',
+    formatType: 'basic',
+    targetAnswer: '2',
+    acceptedAnswers: ['2', '+2'],
+    analogyTip: '⚡ 掛け算が先！まず (-5) × 2 = -10。そして「マイナスを引く」は「プラス」に変わるよ！',
+    steps: [
+      { step: 1, text: '掛け算を先に計算: (-5) × 2 = -10' },
+      { step: 2, text: '式を整理: (-8) - (-10) = -8 + 10' },
+      { step: 3, text: '-8 + 10 = 2' }
+    ],
+    misconceptions: [
+      {
+        id: 'subtraction_before_multiplication',
+        label: '引き算を先にやってしまった（-3 × 2 など）',
+        detectedAnswers: ['-6', '6'],
+        explanation: '四則計算のルールでは、足し算・引き算より「掛け算・割り算」を先に計算するよ。',
+        promptFeedback: '先に後ろの (-5) × 2 を計算しよう！'
+      },
+      {
+        id: 'double_negative_sign_error',
+        label: 'マイナスの引き算で符号をプラスにし忘れた',
+        detectedAnswers: ['-18', '18'],
+        explanation: '-(-10) は +10 になるよ。-8 + 10 = 2 だね。',
+        promptFeedback: '「- (-10)」は「+ 10」に変わるよ！'
+      }
+    ]
+  },
+  // 5. Linear Equation Applications (Word Problems)
+  {
+    id: 'q_app_01',
+    unitId: 'linear_eq_applications',
+    unitName: '一次方程式の利用（代金・個数文章題）',
+    latex: '80x + 120(10 - x) = 1000',
+    displayText: '1個80円のりんごと1個120円の梨を合わせて10個買い、代金の合計は1000円でした。りんごは何個買いましたか。',
+    questionPrompt: 'りんごの個数を求めなさい（単位なしの数字で回答）。',
+    formatType: 'applied_word_problem',
+    targetAnswer: '5',
+    acceptedAnswers: ['5', '5個', 'x=5'],
+    analogyTip: '🍎 りんごを x 個とすると、梨は (10 - x) 個！「80x + 120(10 - x) = 1000」で解けるよ。',
+    steps: [
+      { step: 1, text: 'りんごを x 個、梨を (10 - x) 個とおく' },
+      { step: 2, text: '代金の方程式を立てる: 80x + 120(10 - x) = 1000' },
+      { step: 3, text: 'カッコを外して解く: 80x + 1200 - 120x = 1000 => -40x = -200 => x = 5' }
+    ],
+    misconceptions: [
+      {
+        id: 'pear_quantity_setup_error',
+        label: '梨の個数の表し方を間違えた',
+        detectedAnswers: ['4', '6'],
+        explanation: '合わせて10個だから、りんごが x 個なら梨は (10 - x) 個になるよ。',
+        promptFeedback: '梨の個数は (10 - x) 個とおいてみよう！'
+      }
+    ]
+  }
+];
+
+class EducationEngine {
+  constructor() {
+    this.units = MATH_UNITS;
+    this.questions = MATH_QUESTIONS;
+  }
+
+  getAllUnits() {
+    return this.units;
+  }
+
+  getUnit(unitId) {
+    return this.units.find(u => u.id === unitId) || this.units[0];
+  }
+
+  getQuestion(questionId) {
+    return this.questions.find(q => q.id === questionId) || this.questions[0];
+  }
+
+  getQuestionForUnit(unitId) {
+    const q = this.questions.find(q => q.unitId === unitId);
+    return q || this.questions[0];
+  }
+
+  evaluateAnswer(questionId, userAnswerRaw) {
+    const question = this.getQuestion(questionId);
+    const cleanedAnswer = String(userAnswerRaw).trim().toLowerCase().replace(/\s+/g, '').replace(/　/g, '');
+    
+    const isCorrect = question.acceptedAnswers.some(ans => 
+      ans.toLowerCase().replace(/\s+/g, '') === cleanedAnswer ||
+      ans === cleanedAnswer
+    );
+
+    if (isCorrect) {
+      return {
+        isCorrect: true,
+        misconception: null,
+        feedback: '正解です！'
+      };
+    }
+
+    let matchedMisconception = null;
+    for (const misc of question.misconceptions) {
+      if (misc.detectedAnswers && misc.detectedAnswers.includes(cleanedAnswer)) {
+        matchedMisconception = misc;
+        break;
+      }
+    }
+
+    if (!matchedMisconception && question.misconceptions.length > 0) {
+      matchedMisconception = question.misconceptions[0];
+    }
+
+    return {
+      isCorrect: false,
+      misconception: matchedMisconception,
+      feedback: 'おしい！途中式や考え方を確認してみよう。'
+    };
+  }
+}
+
+window.MATH_UNITS = MATH_UNITS;
+window.MATH_QUESTIONS = MATH_QUESTIONS;
+window.educationEngine = new EducationEngine();
+
+
+/* =========================================
+ * SCRIPT: js/memory_system.js
+ * ========================================= */
+/**
+ * Tier A: Memory System & Multi-Stage Growth State Machine (Phase V Validation Enhanced)
+ */
+
+const DEFAULT_REVIEW_CONFIG = {
+  severityWeights: {
+    detected: 1.6,
+    improving: 1.3,
+    retained: 0.8,
+    mastered: 0.3
+  },
+  forgettingLambda: 0.07,
+  scopeWeights: {
+    regularActive: 2.2,
+    archivedStandard: 0.15,
+    archivedReactivated: 1.9,
+    standard: 1.0
+  },
+  failMultiplierFactor: 0.5,
+  minScoreThreshold: 0.3,
+  masteryCriteria: {
+    minCorrect: 3,
+    minDaysGap: 14,
+    minFormats: 2
+  }
+};
+
+window.DEFAULT_REVIEW_CONFIG = DEFAULT_REVIEW_CONFIG;
+
+class MemorySystem {
+  constructor(store) {
+    this.store = store;
+    this.STORAGE_KEYS = {
+      PERSONAL_EPISODES: 'ai_teacher_personal_episodes',
+      GROWTH_EVIDENCE: 'ai_teacher_growth_evidence',
+      CURRENT_SIMULATED_DAY: 'ai_teacher_simulated_day',
+      TEST_SCOPE: 'ai_teacher_test_scope',
+      MOCK_EXAM_ACTIVE: 'ai_teacher_mock_exam_active',
+      SURVEY_RESPONSES: 'ai_teacher_survey_responses',
+      PILOT_STUDENTS: 'ai_teacher_pilot_students'
+    };
+    this.init();
+  }
+
+  init() {
+    if (!localStorage.getItem(this.STORAGE_KEYS.PERSONAL_EPISODES)) {
+      this.store.save(this.STORAGE_KEYS.PERSONAL_EPISODES, []);
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.GROWTH_EVIDENCE)) {
+      this.store.save(this.STORAGE_KEYS.GROWTH_EVIDENCE, []);
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.CURRENT_SIMULATED_DAY)) {
+      localStorage.setItem(this.STORAGE_KEYS.CURRENT_SIMULATED_DAY, 'DAY 1');
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.TEST_SCOPE)) {
+      this.store.save(this.STORAGE_KEYS.TEST_SCOPE, {
+        activeScopes: ['linear_equations_1'],
+        archivedScopes: []
+      });
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.MOCK_EXAM_ACTIVE)) {
+      localStorage.setItem(this.STORAGE_KEYS.MOCK_EXAM_ACTIVE, 'false');
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.SURVEY_RESPONSES)) {
+      this.store.save(this.STORAGE_KEYS.SURVEY_RESPONSES, []);
+    }
+    if (!localStorage.getItem(this.STORAGE_KEYS.PILOT_STUDENTS)) {
+      this.initPilotStudents();
+    }
+  }
+
+  initPilotStudents() {
+    const defaultStudents = [
+      { id: 'student_yu', name: 'ゆう (Student A)', notes: '初期モチベ低 ➔ 推しきっかけで自立化' },
+      { id: 'student_sora', name: 'ソラ (Student B)', notes: '部活多忙 ➔ 5分集中から延長習慣化' },
+      { id: 'student_rin', name: 'リン (Student C)', notes: '計算苦手 ➔ 思考過程把握で着実に改善' }
+    ];
+    this.store.save(this.STORAGE_KEYS.PILOT_STUDENTS, defaultStudents);
+  }
+
+  getPilotStudents() {
+    return this.store.get(this.STORAGE_KEYS.PILOT_STUDENTS);
+  }
+
+  getSimulatedDay() {
+    return localStorage.getItem(this.STORAGE_KEYS.CURRENT_SIMULATED_DAY) || 'DAY 1';
+  }
+
+  getSimulatedDayNumber() {
+    const dayStr = this.getSimulatedDay();
+    const match = dayStr.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 1;
+  }
+
+  setSimulatedDay(day) {
+    localStorage.setItem(this.STORAGE_KEYS.CURRENT_SIMULATED_DAY, day);
+  }
+
+  // --- Test Scope & Archiving ---
+  getTestScope() {
+    return this.store.get(this.STORAGE_KEYS.TEST_SCOPE);
+  }
+
+  archiveScope(unitId) {
+    const scope = this.getTestScope();
+    scope.activeScopes = scope.activeScopes.filter(id => id !== unitId);
+    if (!scope.archivedScopes.includes(unitId)) {
+      scope.archivedScopes.push(unitId);
+    }
+    this.store.save(this.STORAGE_KEYS.TEST_SCOPE, scope);
+  }
+
+  setMockExamActive(isActive) {
+    localStorage.setItem(this.STORAGE_KEYS.MOCK_EXAM_ACTIVE, String(isActive));
+  }
+
+  isMockExamActive() {
+    return localStorage.getItem(this.STORAGE_KEYS.MOCK_EXAM_ACTIVE) === 'true';
+  }
+
+  // --- Personal Episode Memory ---
+  savePersonalEpisode({ topic, content, importance = 0.7 }) {
+    const user = this.store.getCurrentUser();
+    const episodes = this.store.get(this.STORAGE_KEYS.PERSONAL_EPISODES);
+    
+    const existingIndex = episodes.findIndex(e => e.user_id === user.id && e.topic === topic);
+    const episode = {
+      id: this.store.generateUUID(),
+      user_id: user.id,
+      type: 'personal_episode',
+      topic,
+      content,
+      importance,
+      created_at: new Date().toISOString(),
+      created_day: this.getSimulatedDay(),
+      last_referenced_at: null,
+      reference_count: 0
+    };
+
+    if (existingIndex >= 0) {
+      episodes[existingIndex] = { ...episodes[existingIndex], content, importance, updated_at: new Date().toISOString() };
+    } else {
+      episodes.push(episode);
+    }
+
+    this.store.save(this.STORAGE_KEYS.PERSONAL_EPISODES, episodes);
+    return episode;
+  }
+
+  getPersonalEpisodes(userId) {
+    const episodes = this.store.get(this.STORAGE_KEYS.PERSONAL_EPISODES);
+    return episodes.filter(e => e.user_id === userId);
+  }
+
+  // --- Multi-Stage Growth State Machine with Softened Demotion ---
+  recordGrowthAttempt({ unitId, errorType, isCorrect, questionText, day, formatType = 'basic' }) {
+    const user = this.store.getCurrentUser();
+    const evidenceList = this.store.get(this.STORAGE_KEYS.GROWTH_EVIDENCE);
+    const currentDayNum = day ? parseInt(String(day).replace(/\D/g, ''), 10) : this.getSimulatedDayNumber();
+    
+    let entry = evidenceList.find(e => e.user_id === user.id && e.error_type === errorType);
+    if (!entry) {
+      entry = {
+        id: this.store.generateUUID(),
+        user_id: user.id,
+        unit_id: unitId,
+        error_type: errorType,
+        history: [],
+        status: isCorrect ? 'improving' : 'detected',
+        confidence_score: isCorrect ? 0.7 : 0.4,
+        warning_state: false,
+        first_detected_day: currentDayNum,
+        last_attempt_day: currentDayNum,
+        correct_count: 0,
+        failure_count: 0,
+        distinct_formats: []
+      };
+      evidenceList.push(entry);
+    }
+
+    entry.last_attempt_day = currentDayNum;
+    if (isCorrect) {
+      entry.correct_count += 1;
+    } else {
+      entry.failure_count += 1;
+    }
+
+    if (!entry.distinct_formats.includes(formatType)) {
+      entry.distinct_formats.push(formatType);
+    }
+
+    entry.history.push({
+      day: day || this.getSimulatedDay(),
+      dayNum: currentDayNum,
+      is_correct: isCorrect,
+      question_text: questionText,
+      format_type: formatType,
+      timestamp: new Date().toISOString()
+    });
+
+    const prevStatus = entry.status;
+    const correctHistory = entry.history.filter(h => h.is_correct);
+    
+    if (!isCorrect) {
+      // Softened Regression Handling
+      if (entry.status === 'mastered') {
+        if (!entry.warning_state) {
+          // 1st failure: warning state with reduced confidence, NOT immediately demoted
+          entry.warning_state = true;
+          entry.confidence_score = 0.65;
+          console.log(`[Growth Warning] ${errorType}: 1st mistake in mastered state. Entering warning state.`);
+        } else {
+          // 2nd consecutive failure: demote to retained
+          entry.status = 'retained';
+          entry.warning_state = false;
+          entry.confidence_score = 0.5;
+          console.log(`[Growth Demotion] ${errorType}: Repeated mistake in warning state. Demoted to retained.`);
+        }
+      } else if (entry.status === 'retained') {
+        entry.status = 'detected';
+        entry.confidence_score = 0.4;
+      } else {
+        entry.status = 'detected';
+      }
+    } else {
+      // Progression Handling
+      if (entry.warning_state) {
+        entry.warning_state = false;
+        entry.confidence_score = 1.0;
+      }
+
+      const firstSuccess = correctHistory[0];
+      const lastSuccess = correctHistory[correctHistory.length - 1];
+      const daysSpan = lastSuccess.dayNum - firstSuccess.dayNum;
+      const cfg = window.DEFAULT_REVIEW_CONFIG?.masteryCriteria || DEFAULT_REVIEW_CONFIG.masteryCriteria;
+
+      if (entry.correct_count >= cfg.minCorrect &&
+          daysSpan >= cfg.minDaysGap &&
+          entry.distinct_formats.length >= cfg.minFormats) {
+        entry.status = 'mastered';
+        entry.confidence_score = 1.0;
+      } else if (entry.correct_count >= 2 && daysSpan >= 3) {
+        entry.status = 'retained';
+        entry.confidence_score = 0.85;
+      } else if (entry.correct_count >= 1) {
+        entry.status = 'improving';
+        entry.confidence_score = 0.7;
+      }
+    }
+
+    console.log(`[Growth State Machine] ${errorType}: ${prevStatus} -> ${entry.status} (Confidence: ${entry.confidence_score}, Warning: ${entry.warning_state})`);
+
+    this.store.save(this.STORAGE_KEYS.GROWTH_EVIDENCE, evidenceList);
+    return entry;
+  }
+
+  getAllGrowthEvidence(userId) {
+    const evidenceList = this.store.get(this.STORAGE_KEYS.GROWTH_EVIDENCE);
+    return evidenceList.filter(e => e.user_id === userId);
+  }
+
+  getGrowthEvidence(userId, errorType) {
+    const evidenceList = this.store.get(this.STORAGE_KEYS.GROWTH_EVIDENCE);
+    return evidenceList.find(e => e.user_id === userId && e.error_type === errorType) || null;
+  }
+
+  // --- Milestone Subjective Micro-Survey ---
+  saveSurveyResponse({ day, understandingRating, continueRating, impressionText }) {
+    const user = this.store.getCurrentUser();
+    const surveys = this.store.get(this.STORAGE_KEYS.SURVEY_RESPONSES);
+    const response = {
+      id: this.store.generateUUID(),
+      user_id: user.id,
+      day,
+      understanding_rating: understandingRating,
+      continue_rating: continueRating,
+      impression_text: impressionText || '',
+      timestamp: new Date().toISOString()
+    };
+    surveys.push(response);
+    this.store.save(this.STORAGE_KEYS.SURVEY_RESPONSES, surveys);
+    return response;
+  }
+
+  getSurveysForUser(userId) {
+    const surveys = this.store.get(this.STORAGE_KEYS.SURVEY_RESPONSES);
+    return surveys.filter(s => s.user_id === userId);
+  }
+
+  // --- Selective Memory Retrieval ---
+  retrieveRelevantContext({ contextType, currentUnitId = null, currentInputText = '' }) {
+    const user = this.store.getCurrentUser();
+    const currentDay = this.getSimulatedDay();
+    const sessions = this.store.getAllSessions().filter(s => s.user_id === user.id);
+    const episodes = this.getPersonalEpisodes(user.id);
+    const allGrowth = this.getAllGrowthEvidence(user.id);
+
+    const result = {
+      currentDay,
+      behavioralMemory: null,
+      unresolvedMisconception: null,
+      allGrowthEvidence: allGrowth,
+      relevantPersonalEpisode: null,
+      isMockExamActive: this.isMockExamActive(),
+      testScope: this.getTestScope()
+    };
+
+    if (sessions.length > 0) {
+      const lastSession = sessions[sessions.length - 1];
+      result.behavioralMemory = {
+        sessionId: lastSession.id,
+        startTrigger: lastSession.start_trigger,
+        durationMinutes: Math.max(1, Math.round(lastSession.duration_seconds / 60)),
+        activeStudySeconds: lastSession.active_study_seconds,
+        isExtended: lastSession.is_extended_after_5min,
+        unitName: lastSession.unit_name,
+        subject: lastSession.subject
+      };
+    }
+
+    if (allGrowth.length > 0) {
+      result.growthEvidence = allGrowth[0];
+      result.unresolvedMisconception = {
+        unitId: allGrowth[0].unit_id,
+        errorType: allGrowth[0].error_type,
+        status: allGrowth[0].status
+      };
+    }
+
+    if (episodes.length > 0) {
+      const candidates = episodes.map(ep => {
+        let score = ep.importance * 10;
+        if (ep.last_referenced_at) score -= 5;
+        if (currentInputText && (currentInputText.includes('母') || currentInputText.includes('誕生日'))) score += 15;
+        return { ...ep, score };
+      }).sort((a, b) => b.score - a.score);
+
+      if (candidates.length > 0 && candidates[0].score >= 6) {
+        result.relevantPersonalEpisode = candidates[0];
+      }
+    }
+
+    return result;
+  }
+}
+
+window.memorySystem = new MemorySystem(window.dataStore);
+
+
+/* =========================================
+ * SCRIPT: js/review_scheduler.js
+ * ========================================= */
+/**
+ * Review Scheduler & Multi-Weakness Priority Scoring Engine (Phase V Configurable)
+ */
+
+class ReviewScheduler {
+  constructor(memorySystem) {
+    this.memorySystem = memorySystem;
+  }
+
+  getConfig() {
+    return window.DEFAULT_REVIEW_CONFIG || {
+      severityWeights: { detected: 1.6, improving: 1.3, retained: 0.8, mastered: 0.3 },
+      forgettingLambda: 0.07,
+      scopeWeights: { regularActive: 2.2, archivedStandard: 0.15, archivedReactivated: 1.9, standard: 1.0 },
+      failMultiplierFactor: 0.5,
+      minScoreThreshold: 0.3,
+      masteryCriteria: { minCorrect: 3, minDaysGap: 14, minFormats: 2 }
+    };
+  }
+
+  // Priority Scoring Formula with Externalized Config
+  calculatePriorityScore(growthEntry, testScope, currentDayNum, isMockExamActive) {
+    const cfg = this.getConfig();
+
+    // 1. Base Severity based on Growth State
+    const baseSeverity = cfg.severityWeights[growthEntry.status] || 1.0;
+
+    // 2. Forgetting Risk based on Elapsed Days since last attempt
+    const elapsedDays = Math.max(1, currentDayNum - (growthEntry.last_attempt_day || 1));
+    const forgettingRisk = 1.0 - Math.exp(-cfg.forgettingLambda * elapsedDays);
+
+    // 3. Test Scope & Reactivation Weight
+    let scopeWeight = cfg.scopeWeights.standard;
+    const isRegularActive = testScope.activeScopes.includes(growthEntry.unit_id);
+    const isArchived = testScope.archivedScopes.includes(growthEntry.unit_id);
+
+    if (isRegularActive) {
+      scopeWeight = cfg.scopeWeights.regularActive;
+    } else if (isArchived) {
+      if (isMockExamActive) {
+        scopeWeight = cfg.scopeWeights.archivedReactivated;
+      } else {
+        scopeWeight = cfg.scopeWeights.archivedStandard;
+      }
+    }
+
+    // 4. Failure Ratio Multiplier
+    const totalAttempts = growthEntry.correct_count + growthEntry.failure_count;
+    const failRate = totalAttempts > 0 ? (growthEntry.failure_count / totalAttempts) : 0.5;
+    const failMultiplier = 1.0 + (failRate * cfg.failMultiplierFactor);
+
+    // Final Composite Score
+    const finalScore = (baseSeverity * 0.4 + forgettingRisk * 0.6) * failMultiplier * scopeWeight;
+
+    return {
+      finalScore: parseFloat(finalScore.toFixed(3)),
+      factors: {
+        status: growthEntry.status,
+        baseSeverity,
+        elapsedDays,
+        forgettingRisk: parseFloat(forgettingRisk.toFixed(3)),
+        scopeWeight,
+        isArchived,
+        isReactivated: isArchived && isMockExamActive
+      }
+    };
+  }
+
+  selectOptimalReviewCandidate(userId, currentSubject = 'math') {
+    const allGrowth = this.memorySystem.getAllGrowthEvidence(userId);
+    if (!allGrowth || allGrowth.length === 0) return null;
+
+    const testScope = this.memorySystem.getTestScope();
+    const currentDayNum = this.memorySystem.getSimulatedDayNumber();
+    const isMockExam = this.memorySystem.isMockExamActive();
+    const cfg = this.getConfig();
+
+    const scoredCandidates = allGrowth.map(entry => {
+      const scoreObj = this.calculatePriorityScore(entry, testScope, currentDayNum, isMockExam);
+      return {
+        entry,
+        score: scoreObj.finalScore,
+        factors: scoreObj.factors
+      };
+    }).sort((a, b) => b.score - a.score);
+
+    console.log('[Review Scheduler Scored Candidates]:', scoredCandidates);
+
+    const bestCandidate = scoredCandidates[0];
+    if (!bestCandidate || bestCandidate.score < cfg.minScoreThreshold) {
+      return null;
+    }
+
+    const chosenQuestion = this.resolveProblemForState(bestCandidate.entry, bestCandidate.factors.elapsedDays);
+
+    return {
+      unitId: bestCandidate.entry.unit_id,
+      errorType: bestCandidate.entry.error_type,
+      growthState: bestCandidate.entry.status,
+      priorityScore: bestCandidate.score,
+      factors: bestCandidate.factors,
+      question: chosenQuestion
+    };
+  }
+
+  resolveProblemForState(growthEntry, elapsedDays) {
+    const errorType = growthEntry.error_type;
+
+    if (errorType === 'distributive_law_second_term_omission') {
+      if (growthEntry.status === 'detected') {
+        return {
+          id: 'q_linear_eq_day2_review',
+          text: '2(x - 4) = 10',
+          targetAnswer: '9',
+          formatType: 'basic',
+          reason: '直近の分配法則掛け忘れの定着確認'
+        };
+      } else if (growthEntry.status === 'improving') {
+        return {
+          id: 'q_linear_eq_day7_review',
+          text: '5(2x - 3) = 25',
+          targetAnswer: '4',
+          formatType: 'applied_coefficient',
+          reason: '係数付き分配法則の定着確認（数日経過）'
+        };
+      } else {
+        return {
+          id: 'q_linear_eq_day40_mastery',
+          text: '4(3x - 1) = 20',
+          targetAnswer: '2',
+          formatType: 'varied_compound',
+          reason: '模試対策：長期ブランク後の分配法則応用定着確認'
+        };
+      }
+    }
+
+    return {
+      id: 'q_linear_eq_day2_review',
+      text: '2(x - 4) = 10',
+      targetAnswer: '9',
+      formatType: 'basic',
+      reason: '基本定着確認'
+    };
+  }
+}
+
+window.reviewScheduler = new ReviewScheduler(window.memorySystem);
+
+
+/* =========================================
+ * SCRIPT: js/education_engine.js
+ * ========================================= */
+/**
+ * Tier B: Education Engine (Pedagogical Decision Engine - Multi-Unit & Dynamic Sequence Enhanced)
+ */
+
+class EducationDecisionEngine {
+  constructor() {
+    const baseQuestions = (typeof window !== 'undefined' && window.MATH_QUESTIONS) ? window.MATH_QUESTIONS : (typeof MATH_QUESTIONS !== 'undefined' ? MATH_QUESTIONS : []);
+    this.questions = [
+      ...baseQuestions,
+      {
+        id: 'q_linear_eq_day2_review',
+        unitId: 'linear_equations_1',
+        unitName: '一次方程式（カッコと分配法則・確認）',
+        latex: '2(x - 4) = 10',
+        displayText: '2(x - 4) = 10',
+        questionPrompt: '次の方程式を解きなさい。',
+        formatType: 'basic',
+        targetAnswer: '9',
+        acceptedAnswers: ['9', 'x=9', 'x = 9'],
+        analogyTip: '📦 2 を x と -4 の両方に分配しよう: 2x - 8 = 10',
+        steps: [
+          { step: 1, text: '左辺のカッコを外す: 2x - 8 = 10' },
+          { step: 2, text: '-8 を移項: 2x = 10 + 8 => 2x = 18' },
+          { step: 3, text: '両辺を 2 で割る: x = 9' }
+        ],
+        misconceptions: [
+          {
+            id: 'distributive_law_second_term_omission',
+            label: '2をxだけにかけた（-4に掛け忘れ）',
+            detectedAnswers: ['7', 'x=7'],
+            explanation: 'カッコの前の2は、xと-4の両方に掛けます: 2x - 8 = 10',
+            promptFeedback: '後ろの -4 にも 2 を掛けるのを確認しよう！'
+          }
+        ]
+      },
+      {
+        id: 'q_linear_eq_day7_review',
+        unitId: 'linear_equations_1',
+        unitName: '一次方程式（カッコと分配法則・係数発展）',
+        latex: '5(2x - 3) = 25',
+        displayText: '5(2x - 3) = 25',
+        questionPrompt: '次の方程式を解きなさい。',
+        formatType: 'applied_coefficient',
+        targetAnswer: '4',
+        acceptedAnswers: ['4', 'x=4', 'x = 4'],
+        analogyTip: '📦 5 を 2x と -3 の両方に掛けよう: 10x - 15 = 25',
+        steps: [
+          { step: 1, text: 'カッコを外す: 10x - 15 = 25' },
+          { step: 2, text: '-15 を移項: 10x = 25 + 15 => 10x = 40' },
+          { step: 3, text: '両辺を 10 で割る: x = 4' }
+        ],
+        misconceptions: [
+          {
+            id: 'distributive_law_second_term_omission',
+            label: '5を2xだけにかけた（-3に掛け忘れ）',
+            detectedAnswers: ['2', 'x=2'],
+            explanation: 'カッコの前の5は、中の「2x」と「-3」の両方に掛けます: 10x - 15 = 25',
+            promptFeedback: '後ろの -3 にも 5 を掛けて 10x - 15 にしよう！'
+          }
+        ]
+      }
+    ];
+  }
+
+  getQuestion(questionId) {
+    const q = this.questions.find(q => q.id === questionId);
+    return q || this.questions[0];
+  }
+
+  getQuestionForUnit(unitId) {
+    const q = this.questions.find(q => q.unitId === unitId);
+    return q || this.questions[0];
+  }
+
+  getNextQuestion(currentQuestionId) {
+    const coreSequence = [
+      'q_pos_neg_01',
+      'q_linear_eq_01',
+      'q_algebra_01',
+      'q_prop_01',
+      'q_app_01'
+    ];
+    const currentIndex = coreSequence.indexOf(currentQuestionId);
+    if (currentIndex >= 0 && currentIndex < coreSequence.length - 1) {
+      return this.getQuestion(coreSequence[currentIndex + 1]);
+    }
+    // If at the end or not in list, find next in full questions array
+    const fullIndex = this.questions.findIndex(q => q.id === currentQuestionId);
+    if (fullIndex >= 0 && fullIndex < this.questions.length - 1) {
+      return this.questions[fullIndex + 1];
+    }
+    return this.questions[0];
+  }
+
+  decideGreeting(retrievedMemory, nickname) {
+    const isFirstSession = !retrievedMemory.behavioralMemory;
+    if (isFirstSession) {
+      return {
+        action: 'GREET_INITIAL',
+        reason: 'first_time_user_relationship_building',
+        target_student: nickname,
+        past_reference: null,
+        personal_episode: null,
+        pedagogical_intent: 'establish_safety_and_psychological_comfort'
+      };
+    }
+
+    const memory = retrievedMemory.behavioralMemory;
+    const lastSession = retrievedMemory.lastSession;
+    return {
+      action: 'GREET_RETURNING',
+      reason: 'continuity_and_rapport',
+      target_student: nickname,
+      past_reference: memory.praisePoint || lastSession?.summary || '前回の頑張り',
+      personal_episode: memory.personalFact || null,
+      pedagogical_intent: 'reinforce_growth_identity_and_habituation'
+    };
+  }
+
+  decideStudyInsertion(retrievedMemory, selectedSubject = 'math', selectedUnitId = null) {
+    const user = window.dataStore?.getCurrentUser?.() || { id: 'user_default' };
+    
+    // Check if user explicitly picked a unit
+    if (selectedUnitId && selectedUnitId !== 'recommendation') {
+      const unitQ = this.getQuestionForUnit(selectedUnitId);
+      return {
+        action: 'PROPOSE_USER_SELECTED_UNIT',
+        reason: 'user_selected_curriculum',
+        target_unit: unitQ.unitId,
+        question_id: unitQ.id,
+        question_obj: unitQ,
+        difficulty: 'standard',
+        interaction_style: 'direct_guidance'
+      };
+    }
+
+    const reviewCandidate = window.reviewScheduler?.selectOptimalReviewCandidate?.(user.id, selectedSubject);
+
+    if (reviewCandidate) {
+      const q = this.getQuestion(reviewCandidate.question.id);
+      return {
+        action: 'PROPOSE_NATURAL_REVIEW_INSERTION',
+        reason: reviewCandidate.question.reason,
+        target_unit: reviewCandidate.unitId,
+        target_error: reviewCandidate.errorType,
+        growth_state: reviewCandidate.growthState,
+        is_reactivated_review: reviewCandidate.factors.isReactivated,
+        elapsed_days: reviewCandidate.factors.elapsedDays,
+        difficulty: 'calibrated',
+        interaction_style: 'casual_quick_check',
+        question_id: q.id,
+        question_obj: q
+      };
+    }
+
+    const unitQ = this.getQuestionForUnit('positive_negative');
+    return {
+      action: 'PROPOSE_INITIAL_CHECK',
+      reason: 'baseline_assessment',
+      target_unit: unitQ.unitId,
+      question_id: unitQ.id,
+      question_obj: unitQ,
+      difficulty: 'calibrated_easy',
+      interaction_style: 'light_five_min_challenge'
+    };
+  }
+}
+
+window.educationDecisionEngine = new EducationDecisionEngine();
+
+
+/* =========================================
+ * SCRIPT: js/character_renderer.js
+ * ========================================= */
+/**
+ * Tier C: Character Renderer (4 Official Teachers Edition: Sota, Yui, Ryo, Ayaka)
+ * Uses TEACHER_ASSETS
+ */
+
+class CharacterRenderer {
+  constructor() {
+    this.characters = window.TEACHER_ASSETS;
+  }
+
+  translatePedagogicalTerm(techTerm) {
+    const dict = {
+      'distributive_law_second_term_omission': 'カッコの後ろの数字に掛け忘れ',
+      'transposition_sign_error': '移項するときの符号の変え忘れ',
+      'division_error': '最後の割り算の計算ミス',
+      'proportions_inverse_confusion': '反比例の式の勘違い',
+      'combine_different_variables': '違う文字の項を足してしまったミス',
+      'subtraction_before_multiplication': '掛け算より先に引き算をしてしまったミス'
+    };
+    return dict[techTerm] || 'ちょっとした計算のズレ';
+  }
+
+  getCustomProfile() {
+    const profile = window.dataStore?.getCustomTeacherProfile?.();
+    if (profile && window.TEACHER_ASSETS[profile.baseId]) {
+      return profile;
+    }
+    return {
+      baseId: 'sota',
+      customName: 'ソウタ',
+      personality: { gentle_strict: 2, quiet_energetic: 4, teacher_friend: 4, praise_level: 5, serious_playful: 4 },
+      speechStyle: 'style_b'
+    };
+  }
+
+  render(decision, archetypeId, studentName = 'ゆう') {
+    const profile = this.getCustomProfile();
+    const safeId = (archetypeId && window.TEACHER_ASSETS?.[archetypeId]) ? archetypeId : profile.baseId;
+    const base = window.TEACHER_ASSETS[safeId] || window.TEACHER_ASSETS.sota;
+    const isFemale = (base?.gender === 'female');
+    const isFriend = (profile.personality?.teacher_friend >= 4);
+    const action = decision.action;
+
+    let expression = 'normal';
+    let speechText = '';
+
+    switch (action) {
+      case 'GREET_INITIAL':
+        expression = 'smile';
+        speechText = window.generateFirstEncounterSpeech(profile, studentName);
+        break;
+
+      case 'GREET_WITH_BEHAVIORAL_MEMORY':
+        expression = 'smile';
+        speechText = window.generateReturningGreeting(profile, decision.past_reference, studentName);
+        break;
+
+      case 'PROPOSE_NATURAL_REVIEW_INSERTION':
+        expression = 'normal';
+        speechText = this.renderReviewProposal(profile, base, decision, studentName);
+        break;
+
+      case 'PROPOSE_USER_SELECTED_UNIT':
+      case 'PROPOSE_STANDARD_UNIT':
+        expression = 'normal';
+        speechText = this.renderUnitProposal(profile, base, decision, studentName);
+        break;
+
+      case 'ACKNOWLEDGE_GROWTH_WITH_EVIDENCE':
+        expression = 'smile';
+        speechText = this.renderStageAwareGrowthPraise(profile, base, decision, studentName);
+        break;
+
+      case 'ACKNOWLEDGE_STANDARD_CORRECT':
+        expression = 'smile';
+        speechText = this.renderStandardCorrect(profile, base, studentName);
+        break;
+
+      case 'GUIDE_THROUGH_MISCONCEPTION':
+        expression = 'thinking';
+        speechText = this.renderWrongGuide(profile, base, studentName);
+        break;
+
+      default:
+        expression = 'normal';
+        speechText = isFemale
+          ? `${studentName}ちゃん、準備はいい？一緒にやってみよう！`
+          : `${studentName}、準備はいいかい？一緒に進めよう。`;
+    }
+
+    const voiceStyle = window.SPEECH_STYLES[profile.speechStyle] || window.SPEECH_STYLES.style_a;
+
+    return {
+      expression,
+      speechText,
+      voiceParams: {
+        pitch: (base?.defaultVoice?.pitch || 1.0) + (voiceStyle.pitchMod || 0),
+        rate: (base?.defaultVoice?.rate || 1.0) + (voiceStyle.rateMod || 0),
+        lang: 'ja-JP'
+      },
+      pedagogicalAction: action
+    };
+  }
+
+  renderUnitProposal(profile, base, decision, studentName) {
+    const isFemale = (base?.gender === 'female');
+    const isFriend = (profile.personality?.teacher_friend >= 4);
+    const unitName = decision.question_obj?.unitName || 'この単元';
+
+    if (isFemale) {
+      if (isFriend) return `よし、${unitName}だね！5分だけサクッとやっちゃおっか！`;
+      return `【${unitName}】の問題だよ。落ち着いて自分のペースで解いてみてね。`;
+    }
+    if (isFriend) return `よし、${unitName}だな！気楽にサクッとやって片付けちゃおうぜ！`;
+    return `${unitName}の基本問題だ。落ち着いて解いてみよう。`;
+  }
+
+  renderReviewProposal(profile, base, decision, studentName) {
+    const isFemale = (base?.gender === 'female');
+    const isFriend = (profile.personality?.teacher_friend >= 4);
+    const isStrict = (profile.personality?.gentle_strict >= 4);
+
+    if (decision.is_reactivated_review) {
+      if (isFemale) {
+        if (isFriend) return `模試も近いし、前にやったタイプを1問だけ確認しとこっ！これ解けるかな？`;
+        return `模試に向けて、前にやったところを1問だけ確認してみようか。リラックスしてやってみてね。`;
+      }
+      if (isFriend) return `模試近いし、前にやったやつ1問だけサクッと復習しとこ！これ解けるかやってみて！`;
+      if (isStrict) return `模試対策として、過去に扱った形式の定着度を1問チェックしよう。解いてみてほしい。`;
+      return `模試に向けて、前にやったところを1問確認してみよう。落ち着いて解いてみてくれ。`;
+    }
+
+    if (isFemale) {
+      if (isFriend) return `前回ちょっと引っかかったところ、1問だけ確認してから進もっか！サクッと解いちゃって！`;
+      return `前回少し迷ったところ、1問だけ確認してから進もうね。安心して解いてみてね。`;
+    }
+
+    if (isFriend) return `前回カッコ外すのちょっと惜しかったじゃん？そこだけ1問確認してからいこ！サクッと解いちゃって！`;
+    if (isStrict) return `前回、計算の展開で微調整があったね。まずはこの1問だけ解いてみてほしい。`;
+    return `前回少し迷ったところを1問確認してから進もうぜ。これ一問やってみてくれ！`;
+  }
+
+  renderStageAwareGrowthPraise(profile, base, decision, studentName) {
+    const state = decision.current_state;
+    const isLongGap = (decision.format_type === 'varied_compound') || (state === 'retained');
+    const isFemale = (base?.gender === 'female');
+    const isFriend = (profile.personality?.teacher_friend >= 4);
+
+    if (isLongGap || state === 'retained') {
+      if (isFemale) {
+        if (isFriend) return `うおーやるじゃん！これ前ちょっと手こずってたやつだけど、時間空いても余裕で解けててすごいよ！`;
+        return `すごいね${studentName}さん！前はここ苦戦してたけど、久しぶりなのにすんなり解けて安心したよ。`;
+      }
+      if (isFriend) return `うおーやるじゃん！これ前ちょっと手こずってたやつだけど、時間空いても余裕で解けてんの流石だわ！`;
+      return `前これちょっと引っかかってたよな。時間空いたけど普通に解けてる。もうかなり安定してきたな！`;
+    } else if (state === 'improving') {
+      if (isFemale) {
+        return `やったね！これ前にも解いたけど、何日か空いてもバッチリ覚えててえらいよ！`;
+      }
+      return `よし、正解！何日か空いても、解き方の手順がしっかり身についてるぞ！`;
+    } else {
+      if (isFemale) {
+        return `正解だよ${studentName}ちゃん！前回迷っちゃったところ、今日はバッチリ自分で直せたね！`;
+      }
+      return `おっしゃ正解！前回引っかかってたところ、今日はバッチリ自分で直せてるじゃん！`;
+    }
+  }
+
+  renderStandardCorrect(profile, base, studentName) {
+    const isFemale = (base?.gender === 'female');
+    if (isFemale) {
+      return `大正解！！完璧に解けてるよ、ナイス！`;
+    }
+    if (profile.personality?.teacher_friend >= 4) {
+      return `うお、一発正解！！完璧じゃん、ナイス！`;
+    }
+    return `正解だ。完璧に変形できているね。`;
+  }
+
+  renderWrongGuide(profile, base, studentName) {
+    const isFemale = (base?.gender === 'female');
+    if (isFemale) {
+      return `おしい！大丈夫だよ、どこで迷ったか一緒に確認してみようね。`;
+    }
+    return `おっと惜しい！全然おっけー。どうやって計算したか教えてくれ！`;
+  }
+}
+
+window.characterRenderer = new CharacterRenderer();
+
+
+/* =========================================
+ * SCRIPT: js/tutoring_engine.js
+ * ========================================= */
+/**
+ * Local Fallback Safety Net (障害時専用フェイルセーフ)
+ * Role:
+ * - Serves ONLY as a lightweight safety net when OpenAI API is offline or encounters a network error.
+ * - Prevents UI crashes and returns response_source: "fallback".
+ * - Never acts as a pseudo-AI or parrot templates.
+ */
+
+class TutoringEngine {
+  constructor() {
+    this.turnCount = 0;
+    this.conversationHistory = [];
+  }
+
+  resetSession(questionId = null) {
+    this.turnCount = 0;
+    this.conversationHistory = [];
+  }
+
+  processStudentUtterance({ text, currentQuestion, archetypeId, studentName = 'ゆう' }) {
+    const raw = (text || '').trim();
+    this.turnCount++;
+
+    const safeId = (archetypeId && window.TEACHER_ASSETS?.[archetypeId]) ? archetypeId : 'sota';
+    const teacherAsset = window.TEACHER_ASSETS?.[safeId] || { name: 'ソウタ', gender: 'male', firstPerson: '俺' };
+    const isFemale = (teacherAsset.gender === 'female');
+
+    const targetAns = String(currentQuestion?.targetAnswer || '').trim().toLowerCase();
+    const isExactAnswer = targetAns && (raw.toLowerCase() === targetAns || raw.toLowerCase().includes(`=${targetAns}`));
+
+    let speechText = '';
+    let isCompleted = false;
+
+    if (isExactAnswer) {
+      isCompleted = true;
+      speechText = isFemale
+        ? `大正解！！バッチリ解けたね！答えは【 ${targetAns} 】だよ！自力で辿り着けて本当に素晴らしい！`
+        : `大正解だ！！バッチリ解けたな！答えは【 ${targetAns} 】だ！自力で解ききれてマジですごいぞ！`;
+    } else {
+      speechText = isFemale
+        ? `ごめんね、いま通信が不安定みたい！もう一度話しかけてみてね！`
+        : `わりぃ、いま通信が不安定みたいだ！もう一度話しかけてみてくれ！`;
+    }
+
+    this.conversationHistory.push({
+      turn: this.turnCount,
+      studentInput: raw,
+      teacherResponse: speechText
+    });
+
+    return {
+      success: true,
+      response_source: 'fallback',
+      isLocalFallback: true,
+      speechText,
+      blackboardHint: currentQuestion?.analogyTip ? `💡 ${currentQuestion.analogyTip}` : '',
+      suggestedReplies: ['もう一度話す ✍️', '次の問題へ進む 🚀'],
+      isCompleted,
+      pedagogicalMeta: {
+        student_intent: 'FALLBACK_SAFETY_NET',
+        math_error: null,
+        has_initiative: false,
+        primary_action: isCompleted ? 'VALIDATE_PRAISE' : 'NETWORK_RETRY_GUIDANCE',
+        action_reason: 'API障害時の安全フェイルセーフ案内',
+        is_completed: isCompleted
+      }
+    };
+  }
+}
+
+window.tutoringEngine = new TutoringEngine();
+
+
+/* =========================================
+ * SCRIPT: js/llm_service.js
+ * ========================================= */
+/**
+ * Client LLM Service Controller:
+ * Production Architecture: Browser ➔ /api/chat ➔ Server-side OPENAI_API_KEY ➔ OpenAI API
+ * Fully decoupled from analytics errors and records compact pedagogical meta.
+ */
+
+class LLMService {
+  constructor() {
+    this.isRequestInProgress = false;
+    this.clientId = this.getOrCreateClientId();
+    this.MAX_INPUT_CHARS = 200;
+    this.MAX_DAILY_REQUESTS = 100;
+  }
+
+  getOrCreateClientId() {
+    try {
+      let id = localStorage.getItem('ai_teacher_client_id');
+      if (!id) {
+        id = 'client_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+        localStorage.setItem('ai_teacher_client_id', id);
+      }
+      return id;
+    } catch (e) {
+      return 'client_fallback_' + Date.now();
+    }
+  }
+
+  getDailyRequestCount() {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const key = `ai_teacher_quota_${today}`;
+      return parseInt(localStorage.getItem(key) || '0', 10);
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  incrementDailyCount() {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const key = `ai_teacher_quota_${today}`;
+      const count = this.getDailyRequestCount() + 1;
+      localStorage.setItem(key, String(count));
+      return count;
+    } catch (e) {
+      return 1;
+    }
+  }
+
+  safeLogTelemetry(eventName, payload) {
+    try {
+      if (window.analyticsTracker && typeof window.analyticsTracker.trackCustomEvent === 'function') {
+        window.analyticsTracker.trackCustomEvent(eventName, payload);
+      }
+    } catch (err) {
+      console.warn('[LLMService] Telemetry log skipped:', err.message);
+    }
+  }
+
+  async sendChatMessage({ message, context, history }) {
+    const cleanInput = (message || '').trim();
+
+    // 1. Client-Side Input Length Guard (Max 200 chars)
+    if (!cleanInput) {
+      return { success: false, error: 'EMPTY_INPUT', message: '質問を入力してね！' };
+    }
+    if (cleanInput.length > this.MAX_INPUT_CHARS) {
+      return {
+        success: false,
+        error: 'INPUT_TOO_LONG',
+        message: `質問が少し長すぎるよ（最大${this.MAX_INPUT_CHARS}文字）。${cleanInput.length}文字入力されています。短くまとめて質問してみてね！`
+      };
+    }
+
+    // 2. Client-Side Debounce / Concurrent Request Prevention
+    if (this.isRequestInProgress) {
+      console.warn('[LLMService] Request already in flight. Blocking duplicate send.');
+      return { success: false, error: 'BUSY', message: '先生が回答中だよ。少し待ってね！' };
+    }
+
+    // 3. Client-Side Daily Quota Guard (100 turns / 24h)
+    const currentDailyCount = this.getDailyRequestCount();
+    if (currentDailyCount >= this.MAX_DAILY_REQUESTS) {
+      return {
+        success: true,
+        isQuotaExceeded: true,
+        response_source: 'quota_guard',
+        speechText: '今日はたくさん質問して頑張ったね！今日の勉強はここまでにして、また明日続きをやろう！',
+        blackboardHint: '🎉 本日の利用枠（100会話）を達成しました！また明日一緒にやろう！'
+      };
+    }
+
+    this.isRequestInProgress = true;
+
+    const payloadToSend = {
+      message: cleanInput,
+      clientId: this.clientId,
+      context,
+      history: (history || []).slice(-8)
+    };
+
+    console.log('[LLMService Debug] Prepared payload for /api/chat:\n', JSON.stringify(payloadToSend, null, 2));
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadToSend)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this.incrementDailyCount();
+        this.isRequestInProgress = false;
+
+        const responseSource = data.response_source || 'openai';
+        console.log(`[LLMService Internal Log] response_source: "${responseSource}", model: "${data.modelUsed || 'gpt-4o-mini'}"`);
+        if (data.pedagogicalMeta) {
+          console.log('[LLMService Pedagogical Meta]:', JSON.stringify(data.pedagogicalMeta, null, 2));
+        }
+
+        this.safeLogTelemetry('ai_chat_response', {
+          response_source: responseSource,
+          inputChars: cleanInput.length,
+          pedagogicalMeta: data.pedagogicalMeta || null
+        });
+
+        return {
+          success: true,
+          response_source: responseSource,
+          speechText: data.speechText,
+          isQuotaExceeded: data.isQuotaExceeded || false,
+          blackboardHint: data.blackboardHint,
+          suggestedReplies: data.suggestedReplies,
+          isCompleted: data.isCompleted || false,
+          pedagogicalMeta: data.pedagogicalMeta,
+          modelUsed: data.modelUsed
+        };
+      } else if (response.status === 429) {
+        const data = await response.json().catch(() => ({}));
+        this.isRequestInProgress = false;
+        return {
+          success: false,
+          error: 'RATE_LIMIT',
+          message: data.message || '少し送信が早すぎるよ。数秒待ってからもう一度送信してね！'
+        };
+      } else {
+        console.warn(`[LLMService] /api/chat returned status ${response.status}. Switching to fallback engine.`);
+        return this.localEngineFallback(cleanInput, context);
+      }
+
+    } catch (netErr) {
+      console.info('[LLMService] /api/chat not reachable. Switching to fallback engine.');
+      return this.localEngineFallback(cleanInput, context);
+    } finally {
+      this.isRequestInProgress = false;
+    }
+  }
+
+  localEngineFallback(cleanInput, context) {
+    this.isRequestInProgress = false;
+    this.incrementDailyCount();
+
+    const q = window.educationDecisionEngine?.getQuestion?.(context?.currentQuestionId) || {
+      id: 'q_pos_neg_01',
+      displayText: context?.currentProblem || '(-8) - (-5) × 2',
+      unitName: context?.unitName || '正負の数の四則混合計算',
+      targetAnswer: '2',
+      analogyTip: '掛け算を先に計算しよう！'
+    };
+
+    const res = window.tutoringEngine.processStudentUtterance({
+      text: cleanInput,
+      currentQuestion: q,
+      archetypeId: context?.teacher?.id || 'sota',
+      studentName: context?.studentName || 'ゆう'
+    });
+
+    console.log('[LLMService Internal Log] response_source: "fallback" (local safety net)');
+    
+    this.safeLogTelemetry('ai_chat_response', {
+      response_source: 'fallback',
+      inputChars: cleanInput.length
+    });
+
+    return res;
+  }
+}
+
+window.llmService = new LLMService();
+
+
+/* =========================================
+ * SCRIPT: js/validation_dashboard.js
+ * ========================================= */
+/**
+ * Validation Dashboard Module for Researchers / Evaluators
+ * Dedicated interface for analyzing behavioral transformation KPIs,
+ * funnel drop-offs, and multi-student pilot cohort metrics.
+ */
+
+class ValidationDashboard {
+  constructor(store, memorySystem) {
+    this.store = store;
+    this.memorySystem = memorySystem;
+    this.selectedStudentId = 'student_yu';
+  }
+
+  getStudentProfiles() {
+    return [
+      { id: 'student_yu', name: '生徒A (ゆう)', archetype: '熱血応援型 (レオ)', goal: 'やる気ゼロ ➔ 自立学習化' },
+      { id: 'student_sora', name: '生徒B (ソラ)', archetype: 'クール・的確型 (カイト)', goal: '部活両立 ➔ スキマ時間定着' },
+      { id: 'student_rin', name: '生徒C (リン)', archetype: '優しい伴走型 (ミナト)', goal: '計算苦手 ➔ 思考過程把握' }
+    ];
+  }
+
+  // Preload realistic 30-day pilot cohort data for demonstration
+  seedCohortData() {
+    const studentsData = {
+      student_yu: {
+        activeDays: 24,
+        currentDay: 'DAY 30',
+        totalDurationMinutes: 360, // 6 hours
+        totalActiveStudySeconds: 17280, // ~4.8 hours
+        studyStartsTotal: 24,
+        teacherPromptedStarts: 8,
+        selfDeclaredStarts: 16, // Shifted to 66.7% self-declared!
+        fiveMinCompletes: 22,
+        studyExtends: 15,
+        day2ReturnRate: 91.7,
+        memoryReferencesCount: 19,
+        unitsLearned: ['一次方程式（カッコと分配法則）', '一次方程式（移項と発展）'],
+        growthState: 'mastered',
+        weeklyProgression: [
+          { week: 'Week 1', prompted: 5, selfDeclared: 1, selfRatio: 16.7 },
+          { week: 'Week 2', prompted: 2, selfDeclared: 4, selfRatio: 66.7 },
+          { week: 'Week 3', prompted: 1, selfDeclared: 5, selfRatio: 83.3 },
+          { week: 'Week 4', prompted: 0, selfDeclared: 6, selfRatio: 100.0 }
+        ],
+        funnel: {
+          app_open: 28,
+          teacher_contact: 26,
+          study_offer: 25,
+          study_start: 24,
+          five_min_complete: 22,
+          study_extend: 15,
+          study_end: 24,
+          next_day_return: 22
+        },
+        surveys: [
+          { day: 'DAY 1', understanding: 4, continue: 4, text: '5分だけならやってもいいと思えた。' },
+          { day: 'DAY 7', understanding: 5, continue: 5, text: '昨日のことを覚えてくれててびっくりした。' },
+          { day: 'DAY 30', understanding: 5, continue: 5, text: '前間違えたところをピンポイントで出してくれるから助かる。' }
+        ]
+      },
+      student_sora: {
+        activeDays: 20,
+        currentDay: 'DAY 30',
+        totalDurationMinutes: 280,
+        totalActiveStudySeconds: 13440,
+        studyStartsTotal: 20,
+        teacherPromptedStarts: 9,
+        selfDeclaredStarts: 11,
+        fiveMinCompletes: 18,
+        studyExtends: 10,
+        day2ReturnRate: 85.0,
+        memoryReferencesCount: 14,
+        unitsLearned: ['一次方程式', '文字式と計算'],
+        growthState: 'retained',
+        weeklyProgression: [
+          { week: 'Week 1', prompted: 4, selfDeclared: 1, selfRatio: 20.0 },
+          { week: 'Week 2', prompted: 3, selfDeclared: 2, selfRatio: 40.0 },
+          { week: 'Week 3', prompted: 1, selfDeclared: 4, selfRatio: 80.0 },
+          { week: 'Week 4', prompted: 1, selfDeclared: 4, selfRatio: 80.0 }
+        ],
+        funnel: {
+          app_open: 24,
+          teacher_contact: 22,
+          study_offer: 21,
+          study_start: 20,
+          five_min_complete: 18,
+          study_extend: 10,
+          study_end: 20,
+          next_day_return: 18
+        },
+        surveys: [
+          { day: 'DAY 1', understanding: 4, continue: 4, text: '部活後でも5分なら続けられそう。' },
+          { day: 'DAY 7', understanding: 4, continue: 5, text: 'ロジカルに要点だけ教えてくれるのがいい。' }
+        ]
+      },
+      student_rin: {
+        activeDays: 18,
+        currentDay: 'DAY 30',
+        totalDurationMinutes: 220,
+        totalActiveStudySeconds: 10560,
+        studyStartsTotal: 18,
+        teacherPromptedStarts: 10,
+        selfDeclaredStarts: 8,
+        fiveMinCompletes: 16,
+        studyExtends: 8,
+        day2ReturnRate: 83.3,
+        memoryReferencesCount: 12,
+        unitsLearned: ['一次方程式（基礎）'],
+        growthState: 'improving',
+        weeklyProgression: [
+          { week: 'Week 1', prompted: 4, selfDeclared: 0, selfRatio: 0.0 },
+          { week: 'Week 2', prompted: 3, selfDeclared: 2, selfRatio: 40.0 },
+          { week: 'Week 3', prompted: 2, selfDeclared: 3, selfRatio: 60.0 },
+          { week: 'Week 4', prompted: 1, selfDeclared: 3, selfRatio: 75.0 }
+        ],
+        funnel: {
+          app_open: 22,
+          teacher_contact: 20,
+          study_offer: 19,
+          study_start: 18,
+          five_min_complete: 16,
+          study_extend: 8,
+          study_end: 18,
+          next_day_return: 15
+        },
+        surveys: [
+          { day: 'DAY 1', understanding: 5, continue: 5, text: '怒られないし、優しく教えてくれるから安心。' },
+          { day: 'DAY 7', understanding: 5, continue: 5, text: '前間違えたところを覚えてくれてて嬉しかった。' }
+        ]
+      }
+    };
+
+    localStorage.setItem('ai_teacher_cohort_seed_data', JSON.stringify(studentsData));
+  }
+
+  getStudentData(studentId) {
+    const raw = localStorage.getItem('ai_teacher_cohort_seed_data');
+    if (!raw) {
+      this.seedCohortData();
+    }
+    const cohort = JSON.parse(localStorage.getItem('ai_teacher_cohort_seed_data'));
+    return cohort[studentId] || cohort.student_yu;
+  }
+
+  renderDashboardHTML(studentId = 'student_yu') {
+    this.selectedStudentId = studentId;
+    const student = this.getStudentData(studentId);
+    const profiles = this.getStudentProfiles();
+
+    const selfDeclaredRatio = ((student.selfDeclaredStarts / student.studyStartsTotal) * 100).toFixed(1);
+    const fiveMinRate = ((student.fiveMinCompletes / student.studyStartsTotal) * 100).toFixed(1);
+    const extendRate = ((student.studyExtends / student.fiveMinCompletes) * 100).toFixed(1);
+    const dailyAvgMin = (student.totalDurationMinutes / student.activeDays).toFixed(1);
+
+    // Profile selector options
+    const profileOptions = profiles.map(p => `
+      <option value="${p.id}" ${p.id === studentId ? 'selected' : ''}>
+        ${p.name} - ${p.archetype} [${p.goal}]
+      </option>
+    `).join('');
+
+    // Weekly Progression bars
+    const weeklyBars = student.weeklyProgression.map(w => `
+      <div style="margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px;">
+          <span><strong>${w.week}</strong> (自発開始率: <strong style="color: #10b981;">${w.selfRatio}%</strong>)</span>
+          <span style="color: #94a3b8;">自主: ${w.selfDeclared}回 / AI誘い: ${w.prompted}回</span>
+        </div>
+        <div style="height: 12px; background: rgba(255,255,255,0.08); border-radius: 9999px; overflow: hidden; display: flex;">
+          <div style="width: ${w.selfRatio}%; background: #10b981;" title="self_declared (自主開始)"></div>
+          <div style="width: ${100 - w.selfRatio}%; background: #f59e0b;" title="teacher_prompted (AI転換開始)"></div>
+        </div>
+      </div>
+    `).join('');
+
+    // Funnel Steps
+    const fn = student.funnel;
+    const calcRate = (val, base) => base > 0 ? ((val / base) * 100).toFixed(1) : '100.0';
+
+    const funnelHTML = `
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+        <div class="funnel-step-row">1. app_open: <strong>${fn.app_open}回</strong> (100%)</div>
+        <div class="funnel-step-row">2. teacher_contact: <strong>${fn.teacher_contact}回</strong> (${calcRate(fn.teacher_contact, fn.app_open)}%)</div>
+        <div class="funnel-step-row">3. study_offer: <strong>${fn.study_offer}回</strong> (${calcRate(fn.study_offer, fn.teacher_contact)}%)</div>
+        <div class="funnel-step-row" style="color: #38bdf8; font-weight: bold;">4. study_start: <strong>${fn.study_start}回</strong> (${calcRate(fn.study_start, fn.study_offer)}%) ★開始率</div>
+        <div class="funnel-step-row">5. 5min_complete: <strong>${fn.five_min_complete}回</strong> (${calcRate(fn.five_min_complete, fn.study_start)}%)</div>
+        <div class="funnel-step-row" style="color: #10b981; font-weight: bold;">6. study_extend: <strong>${fn.study_extend}回</strong> (${calcRate(fn.study_extend, fn.five_min_complete)}%) ★自主延長率</div>
+        <div class="funnel-step-row">7. study_end: <strong>${fn.study_end}回</strong> (${calcRate(fn.study_end, fn.study_start)}%)</div>
+        <div class="funnel-step-row" style="color: #a7f3d0;">8. next_day_return: <strong>${fn.next_day_return}回</strong> (${calcRate(fn.next_day_return, fn.study_end)}%) ★再訪継続率</div>
+      </div>
+    `;
+
+    // Surveys
+    const surveysHTML = student.surveys.map(s => `
+      <div style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; font-size: 11px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+          <strong>📅 ${s.day}</strong>
+          <span>理解感: ⭐<strong>${s.understanding}/5</strong> | 継続意欲: ⭐<strong>${s.continue}/5</strong></span>
+        </div>
+        <div style="color: #cbd5e1;">「${s.text}」</div>
+      </div>
+    `).join('');
+
+    return `
+      <div style="padding: 20px; color: #f8fafc;">
+        <!-- Header / Student Selector -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: #38bdf8;">🔬 実証実験検証ダッシュボード (Phase V)</h2>
+            <p style="font-size: 12px; color: #94a3b8;">生徒3〜5名パイロット実証実験用の行動変容データ分析コンソール</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="val-student-select" style="background: #1e293b; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px; font-size: 13px;">
+              ${profileOptions}
+            </select>
+            <button id="btn-reseed-cohort" class="btn-secondary" style="font-size: 11px; padding: 6px 10px;">🔄 テストデータ再生成</button>
+          </div>
+        </div>
+
+        <!-- Top KPI Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px;">
+          <div class="val-card">
+            <div class="val-num" style="color: #38bdf8;">${student.activeDays}日</div>
+            <div class="val-label">利用日数 / ${student.currentDay}</div>
+          </div>
+          <div class="val-card">
+            <div class="val-num" style="color: #10b981;">${student.totalDurationMinutes}分</div>
+            <div class="val-label">総学習時間 (実問題: ${Math.round(student.totalActiveStudySeconds/60)}分)</div>
+          </div>
+          <div class="val-card">
+            <div class="val-num" style="color: #facc15;">${dailyAvgMin}分</div>
+            <div class="val-label">1日平均学習時間</div>
+          </div>
+          <div class="val-card">
+            <div class="val-num" style="color: #a7f3d0;">${selfDeclaredRatio}%</div>
+            <div class="val-label">★自主開始率 (self_declared)</div>
+          </div>
+          <div class="val-card">
+            <div class="val-num" style="color: #c084fc;">${fiveMinRate}%</div>
+            <div class="val-label">5分完走率 (自主延長: ${extendRate}%)</div>
+          </div>
+          <div class="val-card">
+            <div class="val-num" style="color: #fb7185;">${student.memoryReferencesCount}回</div>
+            <div class="val-label">AI記憶参照・承認回数</div>
+          </div>
+        </div>
+
+        <!-- Core Hypothesis Transition & Funnel (2 Columns) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+          
+          <!-- Column 1: Shift from teacher_prompted -> self_declared -->
+          <div class="val-panel">
+            <h3 style="font-size: 14px; font-weight: 700; color: #10b981; margin-bottom: 12px;">
+              📈 最重要変容: teacher_prompted ➔ self_declared への推移
+            </h3>
+            <div style="margin-bottom: 14px;">${weeklyBars}</div>
+            <div style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
+              🟢 <strong>緑:</strong> 生徒自ら「勉強しにきた」と開始した割合<br>
+              🟠 <strong>橙:</strong> 「なんとなく/雑談」からAIの5分提案で開始した割合<br>
+              <strong>判定:</strong> Week 1 (16.7%) から Week 4 (100%) へ、自立学習への完全な転換を確認。
+            </div>
+          </div>
+
+          <!-- Column 2: 8-Stage Behavioral Funnel -->
+          <div class="val-panel">
+            <h3 style="font-size: 14px; font-weight: 700; color: #38bdf8; margin-bottom: 12px;">
+              📊 実証実験行動ファネル（離脱率分析）
+            </h3>
+            <div>${funnelHTML}</div>
+          </div>
+
+        </div>
+
+        <!-- Learning Status & Milestone Surveys (2 Columns) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          
+          <!-- Learning Units & Growth Status -->
+          <div class="val-panel">
+            <h3 style="font-size: 14px; font-weight: 700; color: #facc15; margin-bottom: 12px;">
+              🧠 学習単元 & 弱点克服ステータス
+            </h3>
+            <div style="font-size: 12px; line-height: 1.6; margin-bottom: 10px;">
+              <div><strong>学習単元:</strong> ${student.unitsLearned.join(', ')}</div>
+              <div><strong>分配法則第2項掛け忘れ:</strong> <span style="background: rgba(16,185,129,0.2); color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${student.growthState.toUpperCase()}</span></div>
+              <div><strong>復習スケジューラ次回予定:</strong> 模試対策（長期ブランク後定着確認）</div>
+            </div>
+          </div>
+
+          <!-- Milestone Micro-Surveys -->
+          <div class="val-panel">
+            <h3 style="font-size: 14px; font-weight: 700; color: #c084fc; margin-bottom: 12px;">
+              📝 マイルストーン主観評価 (DAY1 / 7 / 30)
+            </h3>
+            <div>${surveysHTML}</div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  }
+}
+
+window.validationDashboard = new ValidationDashboard(window.dataStore, window.memorySystem);
+
+
+/* =========================================
+ * SCRIPT: js/voice.js
+ * ========================================= */
+/**
+ * Voice Synthesis Controller (4 Teachers Safe Mode)
+ */
+
+class VoiceController {
+  constructor() {
+    this.synth = window.speechSynthesis;
+    this.currentArchetype = 'sota';
+    this.voiceParams = {
+      sota: { pitch: 1.0, rate: 1.05 },
+      yui: { pitch: 1.2, rate: 0.98 },
+      ryo: { pitch: 0.9, rate: 1.0 },
+      ayaka: { pitch: 1.25, rate: 1.1 }
+    };
+  }
+
+  setArchetype(archetypeId) {
+    if (window.TEACHER_ASSETS && window.TEACHER_ASSETS[archetypeId]) {
+      this.currentArchetype = archetypeId;
+    } else {
+      this.currentArchetype = 'sota';
+    }
+  }
+
+  speak(text) {
+    if (!this.synth) return;
+    this.synth.cancel();
+
+    const cleanText = text.replace(/[*_#`]/g, '').trim();
+    if (!cleanText) return;
+
+    const utter = new SpeechSynthesisUtterance(cleanText);
+    utter.lang = 'ja-JP';
+
+    const params = this.voiceParams[this.currentArchetype] || this.voiceParams.sota;
+    utter.pitch = params.pitch;
+    utter.rate = params.rate;
+
+    const voices = this.synth.getVoices();
+    const jaVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+    if (jaVoice) {
+      utter.voice = jaVoice;
+    }
+
+    this.synth.speak(utter);
+  }
+}
+
+window.voiceController = new VoiceController();
+
+
+/* =========================================
+ * SCRIPT: js/ui.js
+ * ========================================= */
+/**
+ * UI Controller & Oshi Teacher Creator Orchestrator (Intent-Driven Transitions & Non-Intrusive Timers)
+ */
+
+class UIController {
+  constructor() {
+    this.currentScreen = 'screen-step1-visual';
+    this.nickname = 'ゆう';
+    
+    // Custom Teacher Builder State (Default: Sota)
+    this.customProfile = {
+      baseId: 'sota',
+      customName: 'ソウタ',
+      personality: {
+        gentle_strict: 2,
+        quiet_energetic: 4,
+        teacher_friend: 4,
+        praise_level: 5,
+        serious_playful: 4
+      },
+      speechStyle: 'style_b'
+    };
+
+    // Lesson State
+    this.userMood = 'にこ';
+    this.userIntent = 'casual';
+    this.startTrigger = 'teacher_prompted';
+    this.currentQuestionId = 'q_pos_neg_01';
+    this.selectedUnitId = 'positive_negative';
+    this.selectedUnitName = '正負の数の四則混合計算';
+    
+    // Chronological Chat History for Multi-Turn LLM Context
+    this.lessonChatHistory = [];
+
+    // Timers
+    this.timerInterval = null;
+    this.sessionSeconds = 0;
+    this.activeStudySeconds = 0;
+    this.TARGET_5MIN_SECONDS = 300;
+    this.fiveMinReached = false;
+    this.isExtended = false;
+
+    this.questionsAttempted = 0;
+    this.questionsCorrect = 0;
+
+    this.init();
+  }
+
+  init() {
+    this.loadSavedCustomProfile();
+    this.initEventListeners();
+    this.updateAllTeacherImages();
+    this.syncDayDisplay();
+  }
+
+  loadSavedCustomProfile() {
+    try {
+      const saved = window.dataStore?.getCustomTeacherProfile?.();
+      if (saved) {
+        if (saved.baseId === 'ken' || !window.TEACHER_ASSETS[saved.baseId]) {
+          saved.baseId = 'sota';
+          saved.customName = 'ソウタ';
+          window.dataStore?.saveCustomTeacherProfile?.(saved);
+        }
+        this.customProfile = saved;
+        this.nickname = window.dataStore?.getCurrentUser?.()?.nickname || 'ゆう';
+        this.currentScreen = 'screen-returning-home';
+      }
+    } catch (e) {
+      console.warn('[UI] Profile load skipped:', e);
+    }
+  }
+
+  updateAllTeacherImages() {
+    const tid = (this.customProfile.baseId && window.TEACHER_ASSETS[this.customProfile.baseId])
+      ? this.customProfile.baseId
+      : 'sota';
+    this.customProfile.baseId = tid;
+
+    const src = window.getTeacherImageSrc(tid);
+    const base = window.TEACHER_ASSETS[tid];
+
+    const imgIds = [
+      'step2-teacher-img',
+      'step3-teacher-img',
+      'encounter-teacher-img',
+      'returning-teacher-img',
+      'offer-teacher-img',
+      'lesson-teacher-img',
+      'care-teacher-img',
+      'milestone-teacher-img',
+      'summary-teacher-img'
+    ];
+
+    imgIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.src = src;
+        el.alt = base.name;
+      }
+    });
+
+    const encName = document.getElementById('encounter-teacher-name');
+    if (encName) encName.textContent = `${base.name} 先生`;
+
+    const retTitle = document.getElementById('returning-teacher-title');
+    if (retTitle) retTitle.textContent = `${base.name} 先生の部屋`;
+
+    const lesName = document.getElementById('lesson-teacher-name');
+    if (lesName) lesName.textContent = `${base.name} 先生`;
+  }
+
+  initEventListeners() {
+    // --- STEP 1: Visual Selection (4 Characters) ---
+    document.querySelectorAll('.visual-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.visual-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        const selectedId = card.dataset.baseId;
+        if (window.TEACHER_ASSETS[selectedId]) {
+          this.customProfile.baseId = selectedId;
+          const base = window.TEACHER_ASSETS[selectedId];
+          this.customProfile.customName = base.name;
+        } else {
+          this.customProfile.baseId = 'sota';
+          this.customProfile.customName = 'ソウタ';
+        }
+        this.updateAllTeacherImages();
+      });
+    });
+
+    document.getElementById('step1-nickname-input')?.addEventListener('input', (e) => {
+      this.nickname = e.target.value.trim() || 'ゆう';
+      try { window.dataStore?.updateCurrentUser?.(this.nickname); } catch (err) {}
+    });
+
+    document.getElementById('btn-step1-next')?.addEventListener('click', () => {
+      this.goToStep2Personality();
+    });
+
+    // --- STEP 2: Personality Sliders Listeners ---
+    const sliderIds = ['slider-gentle-strict', 'slider-quiet-energetic', 'slider-teacher-friend', 'slider-praise', 'slider-serious-playful'];
+    sliderIds.forEach(id => {
+      document.getElementById(id)?.addEventListener('input', () => {
+        this.customProfile.personality.gentle_strict = parseInt(document.getElementById('slider-gentle-strict').value, 10);
+        this.customProfile.personality.quiet_energetic = parseInt(document.getElementById('slider-quiet-energetic').value, 10);
+        this.customProfile.personality.teacher_friend = parseInt(document.getElementById('slider-teacher-friend').value, 10);
+        this.customProfile.personality.praise_level = parseInt(document.getElementById('slider-praise').value, 10);
+        this.customProfile.personality.serious_playful = parseInt(document.getElementById('slider-serious-playful').value, 10);
+        this.updateStep2Preview();
+      });
+    });
+
+    document.getElementById('btn-step2-back')?.addEventListener('click', () => {
+      this.switchScreen('screen-step1-visual');
+    });
+
+    document.getElementById('btn-step2-next')?.addEventListener('click', () => {
+      this.goToStep3Speech();
+    });
+
+    // --- STEP 3: Speech Style Card Listeners ---
+    document.querySelectorAll('.speech-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-audio-preview')) return;
+        document.querySelectorAll('.speech-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        this.customProfile.speechStyle = card.dataset.styleId;
+      });
+    });
+
+    document.querySelectorAll('.btn-audio-preview').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const quote = btn.dataset.quote;
+        window.voiceController.setArchetype(this.customProfile.baseId);
+        window.voiceController.speak(quote);
+      });
+    });
+
+    document.getElementById('btn-step3-back')?.addEventListener('click', () => {
+      this.switchScreen('screen-step2-personality');
+    });
+
+    document.getElementById('btn-step3-finish')?.addEventListener('click', () => {
+      this.saveAndTriggerFirstEncounter();
+    });
+
+    // --- Returning Home Listeners ---
+    document.getElementById('btn-returning-start')?.addEventListener('click', () => {
+      this.goToFirstEncounter(true);
+    });
+
+    document.getElementById('btn-recreate-teacher')?.addEventListener('click', () => {
+      if (confirm('新しく推しAI先生をつくり直しますか？')) {
+        window.dataStore?.clearCustomTeacherProfile?.();
+        this.switchScreen('screen-step1-visual');
+      }
+    });
+
+    // --- First Encounter Intent Selection ---
+    document.querySelectorAll('.encounter-intent-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const intent = btn.dataset.intent;
+        this.userIntent = intent;
+        this.startTrigger = (intent === 'study') ? 'self_declared' : 'teacher_prompted';
+        try { window.analyticsTracker?.trackTeacherContact?.(this.customProfile.baseId, this.userMood, intent); } catch (e) {}
+        this.goToOfferMode();
+      });
+    });
+
+    // --- Offer & Unit Selection Handlers ---
+    document.querySelectorAll('.unit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        this.selectedUnitId = btn.dataset.unitId || 'positive_negative';
+        this.selectedUnitName = btn.dataset.unitName || btn.textContent.trim();
+        const q = window.educationDecisionEngine?.getQuestionForUnit?.(this.selectedUnitId);
+        if (q) {
+          this.currentQuestionId = q.id;
+        }
+      });
+    });
+
+    document.getElementById('btn-accept-offer')?.addEventListener('click', () => {
+      const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+      const isFemale = (base.gender === 'female');
+      const offerText = (this.startTrigger === 'self_declared')
+        ? `まずは肩慣らしに【5分】だけ集中してみよう！`
+        : (isFemale ? `顔見せてくれて嬉しいな！もしよかったら、【5分だけ】私と一緒にサクッとやってみない？` : `せっかくだし【5分だけ】俺と一緒にサクッとやってみないか？`);
+
+      try { window.analyticsTracker?.trackStudyOffer?.(this.customProfile.baseId, '5min_promise', offerText); } catch (e) {}
+      this.startLessonSession();
+    });
+
+    // Lesson Chat Input
+    document.getElementById('btn-send-lesson-chat')?.addEventListener('click', () => {
+      this.handleLessonChatSubmit();
+    });
+    document.getElementById('input-lesson-chat')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing) {
+        this.handleLessonChatSubmit();
+      }
+    });
+
+    // Character counter for student input
+    document.getElementById('input-lesson-chat')?.addEventListener('input', (e) => {
+      const countEl = document.getElementById('chat-char-counter');
+      if (countEl) {
+        const len = e.target.value.length;
+        countEl.textContent = `${len}/200`;
+        if (len > 200) {
+          countEl.style.color = '#ef4444';
+        } else {
+          countEl.style.color = '#94a3b8';
+        }
+      }
+    });
+
+    // Care Fallback button
+    document.getElementById('btn-care-fallback')?.addEventListener('click', () => {
+      this.openCareModal();
+    });
+    document.getElementById('btn-close-care')?.addEventListener('click', () => {
+      this.closeCareModal();
+    });
+
+    // 5-Min Milestone Actions
+    document.getElementById('btn-finish-5min')?.addEventListener('click', () => {
+      this.finishSession();
+    });
+    document.getElementById('btn-extend-5min')?.addEventListener('click', () => {
+      this.extendSession();
+    });
+
+    document.getElementById('btn-fast-forward-5min')?.addEventListener('click', () => {
+      this.sessionSeconds = 300;
+      this.activeStudySeconds = 240;
+      this.updateTimerDisplay();
+      this.fiveMinReached = true;
+      alert('5分間達成フラグを更新しました！振り返りたい時はいつでも「今日はこれで終わる」を押してね。');
+    });
+
+    document.getElementById('btn-restart-app')?.addEventListener('click', () => {
+      this.switchScreen('screen-returning-home');
+      this.renderReturningHome();
+    });
+
+    // Survey
+    document.getElementById('btn-submit-survey')?.addEventListener('click', () => {
+      this.handleSurveySubmit();
+    });
+
+    // Validation Dashboard Modal
+    document.getElementById('btn-open-val-dashboard')?.addEventListener('click', () => {
+      this.openValidationDashboard();
+    });
+    document.getElementById('btn-close-val-dashboard')?.addEventListener('click', () => {
+      document.getElementById('val-dashboard-modal').classList.remove('active');
+    });
+
+    // Mini Telemetry Drawer
+    document.getElementById('btn-toggle-analytics')?.addEventListener('click', () => {
+      this.toggleAnalyticsDrawer(true);
+    });
+    document.getElementById('btn-close-analytics')?.addEventListener('click', () => {
+      this.toggleAnalyticsDrawer(false);
+    });
+    document.getElementById('drawer-backdrop')?.addEventListener('click', () => {
+      this.toggleAnalyticsDrawer(false);
+    });
+
+    // Day Switcher Tabs
+    document.querySelectorAll('.day-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const day = btn.dataset.day;
+        window.memorySystem?.setSimulatedDay?.(day);
+        this.syncDayDisplay();
+      });
+    });
+
+    // Reset All Data
+    document.getElementById('btn-reset-data')?.addEventListener('click', () => {
+      if (confirm('すべてのセッション・記憶・推し先生設定を初期化しますか？')) {
+        window.dataStore?.clearAllData?.();
+        window.memorySystem?.init?.();
+        window.memorySystem?.setSimulatedDay?.('DAY 1');
+        this.customProfile = {
+          baseId: 'sota', customName: 'ソウタ',
+          personality: { gentle_strict: 2, quiet_energetic: 4, teacher_friend: 4, praise_level: 5, serious_playful: 4 },
+          speechStyle: 'style_b'
+        };
+        this.syncDayDisplay();
+        this.switchScreen('screen-step1-visual');
+        this.updateAllTeacherImages();
+        alert('データを初期化しました。STEP 1から開始します。');
+      }
+    });
+
+    window.addEventListener('ai_teacher_event_logged', (e) => {
+      this.appendEventToDrawer(e.detail);
+      this.refreshAnalyticsDrawer();
+    });
+  }
+
+  // --- STEP 2 Render & Preview ---
+  goToStep2Personality() {
+    this.updateAllTeacherImages();
+    this.switchScreen('screen-step2-personality');
+    this.updateStep2Preview();
+  }
+
+  updateStep2Preview() {
+    this.updateAllTeacherImages();
+    const bubbleEl = document.getElementById('step2-sample-speech');
+    if (bubbleEl) {
+      const speech = window.generatePersonalitySampleSpeech(this.customProfile.personality, this.customProfile.speechStyle, this.nickname, this.customProfile);
+      bubbleEl.textContent = speech;
+    }
+  }
+
+  // --- STEP 3 Render & Preview ---
+  goToStep3Speech() {
+    this.updateAllTeacherImages();
+    this.switchScreen('screen-step3-speech');
+  }
+
+  // --- Dramatic First Encounter (暗転 ➔ 初対面) ---
+  saveAndTriggerFirstEncounter() {
+    try {
+      window.dataStore?.saveCustomTeacherProfile?.(this.customProfile);
+      window.analyticsTracker?.trackAppOpen?.({
+        customProfile: this.customProfile,
+        nickname: this.nickname,
+        simulatedDay: window.memorySystem?.getSimulatedDay?.() || 'DAY 1'
+      });
+    } catch (e) {}
+
+    this.goToFirstEncounter(false);
+  }
+
+  goToFirstEncounter(isReturning = false) {
+    this.updateAllTeacherImages();
+    const blackout = document.getElementById('cinematic-blackout');
+    blackout.classList.add('active');
+
+    setTimeout(() => {
+      this.switchScreen('screen-first-encounter');
+      blackout.classList.remove('active');
+      this.updateAllTeacherImages();
+
+      let speech = '';
+      if (isReturning) {
+        const retrieved = window.memorySystem?.retrieveRelevantContext?.({ contextType: 'greeting' });
+        speech = window.generateReturningGreeting(this.customProfile, retrieved?.behavioralMemory, this.nickname);
+      } else {
+        speech = window.generateFirstEncounterSpeech(this.customProfile, this.nickname);
+      }
+
+      const bubbleEl = document.getElementById('encounter-speech-text');
+      if (bubbleEl) {
+        bubbleEl.textContent = speech;
+      }
+
+      window.voiceController.setArchetype(this.customProfile.baseId);
+      window.voiceController.speak(speech);
+    }, 1000);
+  }
+
+  renderReturningHome() {
+    this.updateAllTeacherImages();
+    const bubbleEl = document.getElementById('returning-speech-bubble');
+    if (bubbleEl) {
+      const retrieved = window.memorySystem?.retrieveRelevantContext?.({ contextType: 'greeting' });
+      const greeting = window.generateReturningGreeting(this.customProfile, retrieved?.behavioralMemory, this.nickname);
+      bubbleEl.textContent = greeting;
+    }
+  }
+
+  goToOfferMode() {
+    this.updateAllTeacherImages();
+    const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+    const isFemale = (base.gender === 'female');
+    let speech = (this.startTrigger === 'self_declared')
+      ? `やる気あるな！まずは肩慣らしに【5分】だけ集中してみようぜ！どの単元やる？`
+      : (isFemale ? `顔見せてくれて嬉しいな！もしよかったら、【5分だけ】私と一緒にサクッとやってみない？` : `せっかくだし【5分だけ】俺と一緒にサクッとやってみないか？`);
+
+    const bubbleEl = document.getElementById('offer-speech-text');
+    if (bubbleEl) {
+      bubbleEl.textContent = speech;
+    }
+
+    const triggerBadge = document.getElementById('offer-trigger-badge');
+    if (triggerBadge) {
+      triggerBadge.textContent = (this.startTrigger === 'self_declared') ? '生徒の自主意思表示 (self_declared)' : 'AIからの転換提案 (teacher_prompted)';
+    }
+
+    this.switchScreen('screen-offer');
+    window.voiceController.speak(speech);
+  }
+
+  startLessonSession() {
+    this.sessionSeconds = 0;
+    this.activeStudySeconds = 0;
+    this.fiveMinReached = false;
+    this.isExtended = false;
+    this.questionsAttempted = 0;
+    this.questionsCorrect = 0;
+    this.lessonChatHistory = [];
+
+    const retrieved = window.memorySystem?.retrieveRelevantContext?.({
+      contextType: 'lesson_start',
+      currentUnitId: this.selectedUnitId
+    }) || {};
+
+    const decision = window.educationDecisionEngine.decideStudyInsertion(retrieved, 'math', this.selectedUnitId);
+    this.currentQuestionId = decision.question_id;
+
+    window.tutoringEngine.resetSession(this.currentQuestionId);
+
+    const renderResult = window.characterRenderer.render(decision, this.customProfile.baseId, this.nickname);
+
+    try {
+      window.analyticsTracker?.trackStudyStart?.({
+        teacherArchetype: this.customProfile.baseId,
+        subject: 'math',
+        unitId: decision.target_unit,
+        unitName: this.selectedUnitName,
+        startTrigger: this.startTrigger
+      });
+    } catch (e) {}
+
+    this.updateAllTeacherImages();
+    this.renderLessonScreen(renderResult);
+    this.loadQuestion(this.currentQuestionId);
+    this.startTimers();
+    this.switchScreen('screen-lesson');
+  }
+
+  renderLessonScreen(renderResult) {
+    this.updateAllTeacherImages();
+    if (renderResult?.speechText) {
+      this.setTeacherSpeech(renderResult.speechText, renderResult.expression || 'normal');
+    }
+  }
+
+  setTeacherSpeech(text, expression = 'normal') {
+    const speechEl = document.getElementById('lesson-speech-text');
+    if (speechEl) {
+      speechEl.textContent = text;
+    }
+    this.updateAllTeacherImages();
+    window.voiceController.speak(text);
+  }
+
+  loadNextQuestion() {
+    const nextQ = window.educationDecisionEngine.getNextQuestion(this.currentQuestionId);
+    this.loadQuestion(nextQ.id);
+
+    const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+    const isFemale = (base.gender === 'female');
+    const speech = isFemale
+      ? `よし、次の問題にいこう！【${nextQ.unitName}】の問題だよ！`
+      : `よし、次の問題にいこうぜ！【${nextQ.unitName}】の問題だ！`;
+    this.setTeacherSpeech(speech, 'smile');
+  }
+
+  loadQuestion(questionId) {
+    const q = window.educationDecisionEngine.getQuestion(questionId);
+    this.currentQuestionId = q.id;
+
+    // Reset question-scoped conversation history
+    this.lessonChatHistory = [];
+    window.tutoringEngine.resetSession(q.id);
+
+    document.getElementById('blackboard-question-title').textContent = q.unitName;
+    document.getElementById('blackboard-prompt').textContent = q.questionPrompt || 'Q. 次の計算・方程式を解きなさい。';
+    document.getElementById('blackboard-formula').textContent = q.displayText;
+
+    const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+    const initialGreeting = `【${q.unitName}】の問題だよ！わからないところや疑問があれば何でも話してね。`;
+
+    const stream = document.getElementById('lesson-dialogue-stream');
+    if (stream) {
+      stream.innerHTML = `
+        <div class="stream-msg teacher-msg">
+          <strong>${base.name} 先生:</strong> ${initialGreeting}
+        </div>
+      `;
+    }
+
+    this.lessonChatHistory = [
+      { role: 'assistant', content: initialGreeting }
+    ];
+
+    // Synchronously update blackboard hint to current question
+    const hintBox = document.getElementById('blackboard-step-hint');
+    if (hintBox) {
+      hintBox.innerHTML = q.analogyTip ? `💡 ヒント:\n${q.analogyTip}` : '💡 途中式、疑問、答えなど、下の入力欄から自由に話しかけてね。';
+    }
+
+    let defaultChips = ['どれから計算する？ ❓', 'ヒント 💡', q.targetAnswer, '答え教えて'];
+    if (q.unitId === 'proportions') {
+      defaultChips = ['反比例ってなんだっけ？ ❓', 'なんで？ 💡', '学校ではy=a/xって習った 🏫', 'ヒント 💡', 'y = 6 ✅'];
+    } else if (q.unitId === 'linear_equations_1') {
+      defaultChips = ['分配法則って何？ ❓', 'なんで3を-2にもかけるの？ 💡', '途中式: 3x - 6 = 12 ✍️', 'x = 6 ✅'];
+    } else if (q.unitId === 'algebraic_expressions') {
+      defaultChips = ['同類項って何？ ❓', 'りんごとみかんの箱分け 💡', '2a + 8b ✅', '10ab ❌'];
+    } else if (q.unitId === 'positive_negative') {
+      defaultChips = ['どれから計算する？ ❓', '(-5)×2 はいくつ？ 💡', '符号はどうなる？ ➕➖', '2 ✅'];
+    }
+
+    this.renderSuggestionChips(defaultChips);
+    
+    const input = document.getElementById('input-lesson-chat');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  renderSuggestionChips(chips) {
+    const chipContainer = document.getElementById('suggestion-chips-bar');
+    if (!chipContainer) return;
+
+    chipContainer.innerHTML = chips.map(chip => `
+      <button class="suggestion-chip" data-text="${chip.replace(/[^\w\s=+\-*()/?xXya-z]/g, '').trim() || chip}">
+        ${chip}
+      </button>
+    `).join('');
+
+    chipContainer.querySelectorAll('.suggestion-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.text;
+        if (text === '次の問題へ進む' || text.includes('次の問題') || text.includes('次の問題へ')) {
+          this.loadNextQuestion();
+          return;
+        }
+        if (text.includes('今日はこれで終わる') || text.includes('今日の結果を見る')) {
+          this.finishSession();
+          return;
+        }
+        const input = document.getElementById('input-lesson-chat');
+        if (input) input.value = text;
+        this.handleLessonChatSubmit();
+      });
+    });
+  }
+
+  async handleLessonChatSubmit() {
+    const input = document.getElementById('input-lesson-chat');
+    const sendBtn = document.getElementById('btn-send-lesson-chat');
+    const text = input ? input.value.trim() : '';
+    if (!text) return;
+
+    if (text.length > 200) {
+      alert(`質問が長すぎるよ（最大200文字）。現在${text.length}文字入力されています。短くまとめて質問してみてね！`);
+      return;
+    }
+
+    // Direct check: If student explicitly wants next question
+    if (text.match(/^(次の問題|次いこう|次へ|次の問題へ|他の問題は|他の問題|別の問題)$/)) {
+      this.appendDialogueMessage('student', text);
+      if (input) input.value = '';
+      this.loadNextQuestion();
+      return;
+    }
+
+    if (window.llmService && window.llmService.isRequestInProgress) {
+      console.warn('[UI] Debounce: Request already in flight.');
+      return;
+    }
+
+    const q = window.educationDecisionEngine?.getQuestion?.(this.currentQuestionId) || {
+      id: 'q_pos_neg_01',
+      displayText: '(-8) - (-5) × 2',
+      unitName: '正負の数の四則混合計算',
+      unitId: 'positive_negative',
+      targetAnswer: '2',
+      steps: [
+        { step: 1, text: '掛け算を先に計算: (-5) × 2 = -10' },
+        { step: 2, text: '式を整理: (-8) - (-10) = -8 + 10 = 2' }
+      ],
+      analogyTip: '⚡ 掛け算が先！まず (-5) × 2 = -10。そして「マイナスを引く」は「プラス」に変わるよ！'
+    };
+    const teacherAsset = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+
+    this.appendDialogueMessage('student', text);
+    if (input) input.value = '';
+
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = '考え中... 💭';
+      sendBtn.style.opacity = '0.6';
+    }
+    if (input) input.disabled = true;
+
+    // Build complete context payload reflecting active question
+    const contextPayload = {
+      studentName: this.nickname,
+      grade: '中学1年生',
+      subject: '数学',
+      currentQuestionId: q.id,
+      currentProblem: q.displayText,
+      currentUnit: q.unitName,
+      unitName: q.unitName,
+      currentUnitId: q.unitId,
+      currentProblemAnswer: q.targetAnswer,
+      currentHint: q.analogyTip || '',
+      currentSteps: q.steps || [],
+      currentMisconceptions: q.misconceptions || [],
+      teacher: {
+        id: teacherAsset.id,
+        name: teacherAsset.name,
+        gender: teacherAsset.gender,
+        firstPerson: teacherAsset.firstPerson,
+        subtitle: teacherAsset.subtitle,
+        description: teacherAsset.description
+      },
+      personality: this.customProfile.personality
+    };
+
+    const recentHistory = (this.lessonChatHistory || []).slice(-8);
+
+    try {
+      const result = await window.llmService.sendChatMessage({
+        message: text,
+        context: contextPayload,
+        history: recentHistory
+      });
+
+      if (result && result.success) {
+        this.lessonChatHistory.push({ role: 'user', content: text });
+        this.lessonChatHistory.push({ role: 'assistant', content: result.speechText });
+
+        this.setTeacherSpeech(result.speechText, 'smile');
+        this.appendDialogueMessage('teacher', result.speechText);
+
+        const hintBox = document.getElementById('blackboard-step-hint');
+        if (hintBox && result.blackboardHint) {
+          hintBox.innerHTML = result.blackboardHint.replace(/\n/g, '<br>');
+        }
+
+        if (result.isCompleted) {
+          this.questionsCorrect++;
+          this.questionsAttempted++;
+
+          try {
+            if (window.analyticsTracker && typeof window.analyticsTracker.trackQuestionAnswered === 'function') {
+              window.analyticsTracker.trackQuestionAnswered({
+                questionId: q.id,
+                isCorrect: true,
+                thoughtProcess: { strategyUsed: 'LLM_FREE_DIALOGUE' },
+                timeSpentSeconds: 30
+              });
+            }
+          } catch (analyticsErr) {
+            console.warn('[UI] Analytics tracking skipped:', analyticsErr);
+          }
+
+          // Offer next step action chips comfortably without abrupt timer jumps
+          this.renderSuggestionChips(['次の問題へ進む 🚀', 'もう1回説明を聞く ❓', '今日はこれで終わる 🏁']);
+        } else if (result.suggestedReplies) {
+          this.renderSuggestionChips(result.suggestedReplies);
+        }
+      } else {
+        alert(result?.message || '送信できませんでした。');
+      }
+    } catch (err) {
+      console.error('[UI] Chat error caught:', err);
+    } finally {
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '話す / 答える ✍️';
+        sendBtn.style.opacity = '1.0';
+      }
+      if (input) {
+        input.disabled = false;
+        input.focus();
+      }
+    }
+  }
+
+  appendDialogueMessage(role, text) {
+    const stream = document.getElementById('lesson-dialogue-stream');
+    if (!stream) return;
+
+    const div = document.createElement('div');
+    div.className = `stream-msg ${role === 'teacher' ? 'teacher-msg' : 'student-msg'}`;
+    const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+    const sender = (role === 'teacher') ? base.name : this.nickname;
+    div.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    stream.appendChild(div);
+    stream.scrollTop = stream.scrollHeight;
+  }
+
+  startTimers() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(() => {
+      this.sessionSeconds++;
+      this.updateTimerDisplay();
+
+      if (this.sessionSeconds >= this.TARGET_5MIN_SECONDS && !this.fiveMinReached) {
+        this.fiveMinReached = true;
+        const display = document.getElementById('timer-text');
+        if (display) display.innerHTML = `🎉 5分達成！ (${Math.floor(this.sessionSeconds/60)}:${String(this.sessionSeconds%60).padStart(2,'0')})`;
+      }
+    }, 1000);
+  }
+
+  updateTimerDisplay() {
+    const mins = Math.floor(this.sessionSeconds / 60);
+    const secs = this.sessionSeconds % 60;
+    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    
+    const display = document.getElementById('timer-text');
+    if (display) {
+      if (this.fiveMinReached) {
+        display.innerHTML = `🎉 5分達成！ (${timeStr})`;
+        display.style.color = '#38bdf8';
+      } else {
+        display.textContent = timeStr;
+      }
+    }
+
+    const progress = Math.min(100, (this.sessionSeconds / this.TARGET_5MIN_SECONDS) * 100);
+    const fill = document.getElementById('timer-progress-fill');
+    if (fill) fill.style.width = `${progress}%`;
+
+    const activeDisplay = document.getElementById('active-study-seconds-count');
+    if (activeDisplay) {
+      const estimatedActive = Math.floor(this.sessionSeconds * 0.85);
+      activeDisplay.textContent = `${estimatedActive}秒`;
+    }
+  }
+
+  openCareModal() {
+    this.updateAllTeacherImages();
+    document.getElementById('care-modal').classList.add('active');
+    const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+    const isFemale = (base.gender === 'female');
+    const speech = isFemale
+      ? `ちょっと息切れしちゃったかな？深呼吸しようね！いつでも休んでいいし、一歩進んだだけで本当に偉いよ！`
+      : `ちょっと息切れしたか？深呼吸しよう！いつでも休んでいいし、一歩進んだだけで偉いぞ！`;
+    window.voiceController.speak(speech);
+  }
+
+  closeCareModal() {
+    document.getElementById('care-modal').classList.remove('active');
+  }
+
+  checkFiveMinuteMilestone() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    try { window.analyticsTracker?.track5MinComplete?.(this.questionsCorrect); } catch (e) {}
+
+    this.updateAllTeacherImages();
+    const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+    const isFemale = (base.gender === 'female');
+    const speech = isFemale
+      ? `5分たったよ！よく集中して頑張ったね！どうする？今日はここで終わる？それとももう1問いく？`
+      : `5分たったぞ！マジでよく集中したな！どうする？今日はここで終わるか？それとももう1問いくか？`;
+    document.getElementById('milestone-speech-text').textContent = speech;
+    
+    this.switchScreen('screen-milestone');
+    window.voiceController.speak(speech);
+  }
+
+  extendSession() {
+    this.isExtended = true;
+    try { window.analyticsTracker?.trackStudyExtend?.(1); } catch (e) {}
+
+    this.switchScreen('screen-lesson');
+    this.loadNextQuestion();
+    this.startTimers();
+  }
+
+  finishSession() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+
+    const durationMin = Math.max(1, Math.round(this.sessionSeconds / 60));
+    try {
+      window.analyticsTracker?.trackStudyEnd?.({
+        questionsAttempted: this.questionsAttempted || 1,
+        questionsCorrect: this.questionsCorrect || 1,
+        isExtended: this.isExtended,
+        startTrigger: this.startTrigger
+      });
+    } catch (e) {}
+
+    const base = window.TEACHER_ASSETS[this.customProfile.baseId] || window.TEACHER_ASSETS.sota;
+    const isFemale = (base.gender === 'female');
+    const praiseText = isFemale
+      ? `${this.nickname}さん、自分からアプリを開いて${durationMin}分やりきったね！最初の一歩としては満点だよ！また次回も5分から一緒にやろうね！`
+      : `${this.nickname}、自分からアプリを開いて${durationMin}分やりきったな！最初の一歩としては満点だ！また次回も5分からやろう！`;
+
+    this.updateAllTeacherImages();
+    document.getElementById('summary-speech-text').textContent = praiseText;
+    document.getElementById('summary-session-time').textContent = `${durationMin}分 (${this.sessionSeconds}秒)`;
+    document.getElementById('summary-active-time').textContent = `${Math.floor(this.sessionSeconds * 0.85)}秒`;
+    document.getElementById('summary-start-trigger').textContent = this.startTrigger === 'self_declared' ? '自主開始 (self_declared)' : 'AI転換開始 (teacher_prompted)';
+    document.getElementById('summary-is-extended').textContent = this.isExtended ? 'あり (自主延長達成)' : 'なし (5分達成)';
+    document.getElementById('summary-questions-stat').textContent = `${this.questionsCorrect} / ${this.questionsAttempted || 1}問`;
+
+    this.switchScreen('screen-summary');
+    window.voiceController.speak(praiseText);
+    this.refreshAnalyticsDrawer();
+
+    const currentDay = window.memorySystem?.getSimulatedDay?.() || 'DAY 1';
+    if (['DAY 1', 'DAY 7', 'DAY 30'].includes(currentDay)) {
+      setTimeout(() => {
+        this.openSurveyModal(currentDay);
+      }, 1500);
+    }
+  }
+
+  openSurveyModal(day) {
+    document.getElementById('survey-day-badge').textContent = day;
+    document.getElementById('survey-modal').classList.add('active');
+  }
+
+  handleSurveySubmit() {
+    const day = window.memorySystem?.getSimulatedDay?.() || 'DAY 1';
+    const understanding = parseInt(document.getElementById('survey-understanding-select').value, 10);
+    const continueVal = parseInt(document.getElementById('survey-continue-select').value, 10);
+    const text = document.getElementById('survey-impression-input').value.trim();
+
+    try {
+      window.memorySystem?.saveSurveyResponse?.({
+        day,
+        understandingRating: understanding,
+        continueRating: continueVal,
+        impressionText: text
+      });
+    } catch (e) {}
+
+    document.getElementById('survey-modal').classList.remove('active');
+    alert('アンケートにご協力いただきありがとうございました！');
+  }
+
+  openValidationDashboard() {
+    const modal = document.getElementById('val-dashboard-modal');
+    const content = document.getElementById('val-dashboard-content');
+    content.innerHTML = window.validationDashboard?.renderDashboardHTML?.('student_yu') || '';
+    modal.classList.add('active');
+
+    document.getElementById('val-student-select')?.addEventListener('change', (e) => {
+      content.innerHTML = window.validationDashboard?.renderDashboardHTML?.(e.target.value) || '';
+    });
+    document.getElementById('btn-reseed-cohort')?.addEventListener('click', () => {
+      window.validationDashboard?.seedCohortData?.();
+      content.innerHTML = window.validationDashboard?.renderDashboardHTML?.('student_yu') || '';
+      alert('パイロットテストデータを再生成しました。');
+    });
+  }
+
+  syncDayDisplay() {
+    const currentDay = window.memorySystem?.getSimulatedDay?.() || 'DAY 1';
+    document.querySelectorAll('.day-tab-btn').forEach(b => {
+      if (b.dataset.day === currentDay) {
+        b.classList.add('active-day');
+      } else {
+        b.classList.remove('active-day');
+      }
+    });
+    const badge = document.querySelector('.logo-badge');
+    if (badge) badge.textContent = currentDay;
+  }
+
+  switchScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(screenId);
+    if (target) {
+      target.classList.add('active');
+      this.currentScreen = screenId;
+      this.updateAllTeacherImages();
+    }
+  }
+
+  toggleAnalyticsDrawer(open) {
+    const drawer = document.getElementById('analytics-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (open) {
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
+      this.refreshAnalyticsDrawer();
+    } else {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+    }
+  }
+
+  refreshAnalyticsDrawer() {
+    try {
+      const summary = window.analyticsTracker?.getAnalyticsSummary?.() || {};
+      document.getElementById('metric-app-opens').textContent = summary.appOpens || 0;
+      document.getElementById('metric-teacher-contacts').textContent = summary.teacherContacts || 0;
+      document.getElementById('metric-study-starts').textContent = summary.studyStarts || 0;
+      document.getElementById('metric-prompt-conv-rate').textContent = `${summary.promptConversionRate || 0}%`;
+      document.getElementById('metric-self-declared-starts').textContent = summary.selfDeclaredStarts || 0;
+      document.getElementById('metric-fiveMin-completes').textContent = summary.fiveMinCompletes || 0;
+      document.getElementById('metric-study-extends').textContent = summary.studyExtends || 0;
+      document.getElementById('metric-total-active-seconds').textContent = `${summary.totalActiveSeconds || 0}s`;
+    } catch (e) {}
+  }
+
+  appendEventToDrawer(event) {
+    const eventListEl = document.getElementById('drawer-event-list');
+    if (eventListEl && event) {
+      const item = document.createElement('div');
+      item.className = 'event-log-item';
+      item.innerHTML = `
+        <strong>${event.event_name || 'event'}</strong>
+        <span style="color: #94a3b8;">${new Date(event.timestamp || Date.now()).toLocaleTimeString()}</span>
+      `;
+      eventListEl.insertBefore(item, eventListEl.firstChild);
+    }
+  }
+}
+
+window.uiController = new UIController();
+
+
+</script>
+</body>
+</html>

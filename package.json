@@ -1,0 +1,10 @@
+{
+  "name": "ai-teacher-studio",
+  "version": "5.0.0",
+  "description": "AI Teacher Studio - Real OpenAI API Integration & 5-Minute Tutoring Architecture",
+  "main": "api/chat.js",
+  "scripts": {
+    "test": "node test_openai_integration_10_tests.js"
+  },
+  "dependencies": {}
+}
